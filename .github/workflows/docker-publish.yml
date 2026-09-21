@@ -120,6 +120,7 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
           IMAGES: ghcr.io/${{ github.repository }}${{ steps.dockerhub.outputs.enabled == 'true' && format(' {0}', github.repository) || '' }}
         run: |
+          # OCI references are lowercase-only; github.repository keeps org casing
           for image in $IMAGES; do
-            cosign sign --yes "${image}@${DIGEST}"
+            cosign sign --yes "${image,,}@${DIGEST}"
           done
