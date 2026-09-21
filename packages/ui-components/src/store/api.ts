@@ -2,11 +2,14 @@ import storage from './storage';
 
 export class CustomError extends Error {
   code: number;
+  /** set when the server answers a login with a two-factor challenge */
+  otpRequired: boolean;
 
-  constructor(message: string, code?: number) {
+  constructor(message: string, code?: number, otpRequired?: boolean) {
     super(message);
     this.name = 'CustomError';
     this.code = code ?? 500;
+    this.otpRequired = otpRequired === true;
   }
 }
 
@@ -83,7 +86,7 @@ class API {
           } else {
             const message =
               typeof data === 'string' ? data : (data?.error ?? data?.message ?? 'Unknown error');
-            reject(new CustomError(message, status));
+            reject(new CustomError(message, status, data?.otpRequired === true));
           }
         })
         .catch((error) => {

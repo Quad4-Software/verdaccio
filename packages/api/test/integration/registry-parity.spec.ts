@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
+
 import supertest from 'supertest';
 import { describe, expect, test } from 'vitest';
 
@@ -12,21 +15,67 @@ import {
   publishVersionWithToken,
 } from './_helper';
 
-const SIGSTORE_BUNDLE = {
-  mediaType: 'application/vnd.dev.sigstore.bundle.v0.3+json',
-  dsseEnvelope: {
-    payload: Buffer.from(
-      JSON.stringify({ predicateType: 'https://slsa.dev/provenance/v1' })
-    ).toString('base64'),
-    signatures: [{ keyid: 'test', sig: 'AAAA' }],
-  },
-};
+// registry only accepts a bundle whose in-toto subject is bound to the stored
+// tarball: name must reference the publish and digest must match the bytes
+function sigstoreBundle(pkgName: string, version: string, tarballB64: string) {
+  const sha512 = createHash('sha512').update(Buffer.from(tarballB64, 'base64')).digest('hex');
+  return {
+    mediaType: 'application/vnd.dev.sigstore.bundle.v0.3+json',
+    dsseEnvelope: {
+      payloadType: 'application/vnd.in-toto+json',
+      payload: Buffer.from(
+        JSON.stringify({
+          _type: 'https://in-toto.io/Statement/v1',
+          subject: [{ name: `pkg:npm/${pkgName}@${version}`, digest: { sha512 } }],
+          predicateType: 'https://slsa.dev/provenance/v1',
+        })
+      ).toString('base64'),
+      signatures: [{ keyid: 'test', sig: 'AAAA' }],
+    },
+  };
+}
+
+// minimal hand-rolled tar holding one package/package.json so the publish
+// scanner inspects real tarball contents rather than request metadata
+function tarballWithManifest(manifest: Record<string, unknown>): string {
+  const content = Buffer.from(JSON.stringify(manifest));
+  const header = Buffer.alloc(512);
+  header.write('package/package.json', 0);
+  header.write('0000644\0', 100);
+  header.write('0000000\0', 108);
+  header.write('0000000\0', 116);
+  header.write(content.length.toString(8).padStart(11, '0') + '\0', 124);
+  header.write('00000000000\0', 136);
+  header.write('0', 156);
+  header.write('ustar\0', 257);
+  header.write('00', 263);
+  header.write('        ', 148);
+  let sum = 0;
+  for (const byte of header) {
+    sum += byte;
+  }
+  header.write(sum.toString(8).padStart(6, '0') + '\0 ', 148);
+  const body = Buffer.alloc(Math.ceil(content.length / 512) * 512);
+  content.copy(body);
+  return gzipSync(Buffer.concat([header, body, Buffer.alloc(1024)])).toString('base64');
+}
+
+function metadataWithTarball(pkgName: string, version: string, manifest: Record<string, unknown>) {
+  const metadata = generatePackageMetadata(pkgName, version) as any;
+  const data = tarballWithManifest(manifest);
+  const key = `${pkgName.split('/').pop()}-${version}.tgz`;
+  metadata._attachments[key].data = data;
+  metadata._attachments[key].length = Buffer.from(data, 'base64').length;
+  return metadata;
+}
 
 async function publishWithProvenance(app, pkgName: string, version: string, token: string) {
   const metadata = generatePackageMetadata(pkgName, version) as any;
+  const tgzKey = `${pkgName.split('/').pop()}-${version}.tgz`;
+  const bundle = sigstoreBundle(pkgName, version, metadata._attachments[tgzKey].data);
   metadata._attachments[`${pkgName.split('/').pop()}-${version}.sigstore`] = {
     content_type: 'application/vnd.dev.sigstore.bundle.v0.3+json',
-    data: JSON.stringify(SIGSTORE_BUNDLE),
+    data: JSON.stringify(bundle),
   };
   return supertest(app)
     .put(`/${encodeURIComponent(pkgName)}`)
@@ -98,7 +147,9 @@ describe('registry parity endpoints', () => {
       .get('/-/npm/v1/attestations/att-pkg-2@2.0.0')
       .expect(HTTP_STATUS.OK);
     expect(response.body.attestations).toHaveLength(1);
-    expect(response.body.attestations[0].bundle).toEqual(SIGSTORE_BUNDLE);
+    expect(response.body.attestations[0].bundle.mediaType).toBe(
+      'application/vnd.dev.sigstore.bundle.v0.3+json'
+    );
     expect(response.body.attestations[0].predicateType).toBe('https://slsa.dev/provenance/v1');
 
     await supertest(app)
@@ -302,8 +353,13 @@ describe('publish scanning', () => {
   test('enforce mode rejects lifecycle scripts', async () => {
     const app = await initializeServer('registry-scan.yaml');
     const token = (await createUser(app, 'scan-user', 'testpass')).body.token;
-    const metadata = generatePackageMetadata('scanned-pkg', '1.0.0') as any;
-    metadata.versions['1.0.0'].scripts = { postinstall: 'node index.js' };
+    // the policy runs against the package.json inside the tarball — putting
+    // scripts only in the publish metadata must not be what trips the scan
+    const metadata = metadataWithTarball('scanned-pkg', '1.0.0', {
+      name: 'scanned-pkg',
+      version: '1.0.0',
+      scripts: { postinstall: 'node index.js' },
+    });
     await supertest(app)
       .put(`/${encodeURIComponent('scanned-pkg')}`)
       .set(HEADER_TYPE.CONTENT_TYPE, HEADERS.JSON)
@@ -318,8 +374,11 @@ describe('publish scanning', () => {
   test('denied licenses are rejected', async () => {
     const app = await initializeServer('registry-scan.yaml');
     const token = (await createUser(app, 'scan-user2', 'testpass')).body.token;
-    const metadata = generatePackageMetadata('denied-license', '1.0.0') as any;
-    metadata.versions['1.0.0'].license = 'SSPL-1.0';
+    const metadata = metadataWithTarball('denied-license', '1.0.0', {
+      name: 'denied-license',
+      version: '1.0.0',
+      license: 'SSPL-1.0',
+    });
     await supertest(app)
       .put(`/${encodeURIComponent('denied-license')}`)
       .set(HEADER_TYPE.CONTENT_TYPE, HEADERS.JSON)

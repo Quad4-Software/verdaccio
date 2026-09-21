@@ -869,8 +869,14 @@ class Auth implements IAuthMiddleware, TokenEncryption, pluginUtils.IBasicAuth {
       }
 
       if (this._isRemoteUserValid(credentials)) {
-        const { name, groups } = credentials as RemoteUser;
+        const { name, groups, token: tokenClaim } = credentials as RemoteUser;
         req.remote_user = createRemoteUser(name as string, groups);
+        // the token claim carries the generated-token key; dropping it here
+        // would exempt web API requests from revocation, CIDR and readonly
+        // enforcement
+        if (tokenClaim) {
+          req.remote_user.token = tokenClaim;
+        }
       } else {
         req.remote_user = createAnonymousRemoteUser();
       }

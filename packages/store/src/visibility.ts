@@ -49,6 +49,10 @@ export async function assertManifestVisibility(
  * Same check for callers that only know the package name, such as the tarball
  * route. Only local manifests can carry the flag, so a missing local manifest
  * is not an error here.
+ *
+ * An explicit collaborator grant also satisfies visibility: the owner granted
+ * the access, and a write collaborator who cannot read their own package
+ * cannot publish to it either.
  */
 export async function assertPackageVisibility(
   auth: PublishChecker,
@@ -60,6 +64,18 @@ export async function assertPackageVisibility(
   try {
     manifest = await storage.getPackageLocalMetadata(packageName);
   } catch {
+    return;
+  }
+  if (authUtils.isPrivateVisibility(manifest?.visibility) === false) {
+    return;
+  }
+  const username = typeof remoteUser?.name === 'string' ? remoteUser.name : undefined;
+  const collaborator =
+    username !== undefined &&
+    authUtils.matchPackagePatterns(packageName, remoteUser?.token?.packages) !== false
+      ? await storage.getCollaboratorPermission(packageName, username).catch(() => null)
+      : null;
+  if (collaborator === 'read' || collaborator === 'write') {
     return;
   }
   await assertManifestVisibility(auth, manifest, remoteUser);

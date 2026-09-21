@@ -94,6 +94,10 @@ export function tagVersionNext(manifest: Manifest, version: string, tag: StringV
  * @returns
  */
 export function isNewerVersion(newVersion, oldVersion) {
+  // uplink data is untrusted; semver.compare throws on invalid input
+  if (semver.valid(newVersion) === null || semver.valid(oldVersion) === null) {
+    return false;
+  }
   const comparisonResult = semver.compare(newVersion, oldVersion);
 
   return comparisonResult === 1 || comparisonResult === 0;

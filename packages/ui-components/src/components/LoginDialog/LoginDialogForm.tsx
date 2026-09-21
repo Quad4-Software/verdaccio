@@ -10,6 +10,7 @@ const LoginDialogForm: FC = () => {
     handleSubmit,
     formState: { isValid, isSubmitting, errors },
     onSubmit,
+    otpRequired,
   } = useLoginForm();
   return (
     <LoginForm
@@ -18,6 +19,7 @@ const LoginDialogForm: FC = () => {
       isSubmitting={isSubmitting}
       isValid={isValid}
       onSubmit={onSubmit}
+      otpRequired={otpRequired}
       register={register}
     />
   );

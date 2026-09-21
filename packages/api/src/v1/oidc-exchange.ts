@@ -65,13 +65,75 @@ function bearerToken(req: $RequestExtend): string | undefined {
   return token;
 }
 
-/** The npm CLI mints the CI token with audience `npm:{registry host}`. */
-function expectedAudience(req: $RequestExtend, entry: TrustedPublisher): string {
-  return entry.audience ?? `npm:${req.hostname}`;
+/**
+ * The npm CLI mints the CI token with audience `npm:{registry host}`. The
+ * host must come from the configured public URL — `req.hostname` reads the
+ * Host header, which the client controls; falling back to it would let a
+ * token minted for any audience exchange here, so we fail closed instead.
+ */
+function expectedAudience(
+  req: $RequestExtend,
+  entry: TrustedPublisher,
+  config: Config
+): string | undefined {
+  if (entry.audience) {
+    return entry.audience;
+  }
+  const configured = process.env.VERDACCIO_PUBLIC_URL ?? config.url_prefix;
+  if (typeof configured === 'string') {
+    try {
+      const host = new URL(configured).hostname;
+      if (host !== '') {
+        return `npm:${host}`;
+      }
+    } catch {
+      debug('could not derive audience from configured public url %o', configured);
+    }
+  }
+  return undefined;
 }
 
 function issuerOf(entry: TrustedPublisher): string {
   return entry.issuer ?? PROVIDER_DEFAULTS[entry.provider]?.issuer ?? '';
+}
+
+function isLoopbackUrl(value: string): boolean {
+  try {
+    const { hostname } = new URL(value);
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Fail closed on malformed trusted-publisher entries: an entry without
+ * packages/repository/user, an unknown provider without an explicit issuer,
+ * or a plain-http endpoint outside localhost dev is skipped with a warning
+ * instead of silently broadening what tokens are accepted.
+ */
+function validPublishers(publishers: TrustedPublisher[], logger: Logger): TrustedPublisher[] {
+  return publishers.filter((entry) => {
+    const issuer = issuerOf(entry);
+    const jwksUri = entry.jwksUri ?? PROVIDER_DEFAULTS[entry.provider]?.jwks(issuer);
+    const problems = [
+      !Array.isArray(entry.packages) || entry.packages.length === 0,
+      typeof entry.repository !== 'string' || entry.repository === '',
+      typeof entry.user !== 'string' || entry.user === '',
+      issuer === '' || typeof jwksUri !== 'string',
+      (issuer.startsWith('http://') || (jwksUri ?? '').startsWith('http://')) &&
+        !isLoopbackUrl(issuer) &&
+        !isLoopbackUrl(jwksUri ?? ''),
+    ];
+    if (problems.some(Boolean)) {
+      logger.warn(
+        { repository: entry.repository, provider: entry.provider },
+        'trusted publishing entry for @{repository} is malformed or insecure, skipped'
+      );
+      return false;
+    }
+    return true;
+  });
 }
 
 // github: `owner/repo/.github/workflows/file.yml@ref`, matched on the file name
@@ -117,8 +179,8 @@ export default function (
   config: Config,
   logger: Logger
 ): void {
-  const publishers = config?.security?.trustedPublishing;
-  if (!Array.isArray(publishers) || publishers.length === 0) {
+  const publishers = validPublishers(config?.security?.trustedPublishing ?? [], logger);
+  if (publishers.length === 0) {
     return;
   }
 
@@ -161,12 +223,13 @@ export default function (
       for (const entry of candidates) {
         const issuer = issuerOf(entry);
         const jwksUri = entry.jwksUri ?? PROVIDER_DEFAULTS[entry.provider]?.jwks(issuer);
-        if (!jwksUri) {
+        const audience = expectedAudience(req, entry, config);
+        if (!jwksUri || !audience) {
           continue;
         }
         const options: JWTVerifyOptions = {
           issuer,
-          audience: expectedAudience(req, entry),
+          audience,
         };
         try {
           const { payload: claims } = await jwtVerify(idToken, jwksFor(jwksUri), options);

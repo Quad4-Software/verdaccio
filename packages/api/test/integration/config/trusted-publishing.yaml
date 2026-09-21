@@ -28,6 +28,9 @@ security:
       issuer: https://issuer.test
       # the spec rewrites this to the local JWKS stub
       jwksUri: http://127.0.0.1:0/jwks
+      # audience must be configured: falling back to the Host header would
+      # accept tokens minted for any registry
+      audience: npm:127.0.0.1
       packages:
         - '@token/*'
       user: ci-bot
@@ -37,6 +40,7 @@ security:
       issuer: https://gitlab.test
       jwksUri: http://127.0.0.1:0/jwks
       environment: production
+      audience: npm:127.0.0.1
       packages:
         - '@token/gitlab-*'
       user: ci-bot

@@ -1,5 +1,5 @@
 import buildDebug from 'debug';
-import type { Response, Router } from 'express';
+import type { RequestHandler, Response, Router } from 'express';
 import { randomUUID } from 'node:crypto';
 
 import type { Auth } from '@verdaccio/auth';
@@ -22,7 +22,9 @@ export default function (
   auth: Auth,
   storage: Storage,
   config: Config,
-  logger: Logger
+  logger: Logger,
+  /** No-op unless the user logging in has two-factor enabled. */
+  requireOtp: RequestHandler = (_req, _res, next) => next()
 ): void {
   route.post(
     LOGIN_API_ENDPOINTS.login,
@@ -144,29 +146,37 @@ export default function (
             return next(errorUtils.getCode(HTTP_STATUS.UNAUTHORIZED, err.message));
           }
 
-          const remoteUser = createRemoteUser(username, user?.groups || []);
-          const token = await getApiToken(auth, config, remoteUser, password);
+          // password alone must not mint a token for a two-factor account
+          Promise.resolve(
+            requireOtp(req, res, async (otpError?: any) => {
+              if (otpError) {
+                return next(otpError);
+              }
+              const remoteUser = createRemoteUser(username, user?.groups || []);
+              const token = await getApiToken(auth, config, remoteUser, password);
 
-          if (!token) {
-            return next(errorUtils.getUnauthorized());
-          }
+              if (!token) {
+                return next(errorUtils.getUnauthorized());
+              }
 
-          // Replace login session with token (to be picked up by the "done" endpoint)
-          debug('saving token for sessionId %o', sessionId);
-          await storage.deleteToken(sessionId, WEB_LOGIN_SESSION_ID);
-          await storage.saveToken({
-            user: sessionId,
-            token,
-            key: WEB_LOGIN_SESSION_ID,
-            readonly: false,
-            created: new Date().getTime(),
-          });
+              // Replace login session with token (to be picked up by the "done" endpoint)
+              debug('saving token for sessionId %o', sessionId);
+              await storage.deleteToken(sessionId, WEB_LOGIN_SESSION_ID);
+              await storage.saveToken({
+                user: sessionId,
+                token,
+                key: WEB_LOGIN_SESSION_ID,
+                readonly: false,
+                created: new Date().getTime(),
+              });
 
-          const message = authUtils.getAuthenticatedMessage(remoteUser.name ?? '');
+              const message = authUtils.getAuthenticatedMessage(remoteUser.name ?? '');
 
-          res.status(HTTP_STATUS.CREATED);
-          res.set(HEADERS.CACHE_CONTROL, HEADERS.NO_CACHE);
-          res.json({ ok: message, token });
+              res.status(HTTP_STATUS.CREATED);
+              res.set(HEADERS.CACHE_CONTROL, HEADERS.NO_CACHE);
+              res.json({ ok: message, token });
+            })
+          ).catch(next);
         }
       );
     }

@@ -4,6 +4,7 @@ import { Router } from 'express';
 import { isNil } from 'lodash-es';
 
 import type { Auth } from '@verdaccio/auth';
+import { TfaStore } from '@verdaccio/auth';
 import type { VerdaccioError } from '@verdaccio/core';
 import {
   API_ERROR,
@@ -16,6 +17,7 @@ import {
   validationUtils,
 } from '@verdaccio/core';
 import { WebUrls, rateLimit } from '@verdaccio/middleware';
+import type { Storage } from '@verdaccio/store';
 import type { Config, JWTSignOptions, RemoteUser } from '@verdaccio/types';
 
 import type { $NextFunctionVer } from './package';
@@ -24,8 +26,13 @@ const debug = buildDebug('verdaccio:web:api:user');
 
 const WEB_LOGIN_SESSION_ID = 'web-login-sessionId';
 
+// wording mirrors the npm CLI challenge so the login dialog can recognise it
+const OTP_REQUIRED_MESSAGE = 'You must provide a one-time pass.';
+
 function addUserAuthApi(auth: Auth, config: Config, storage: Storage): Router {
   const route = Router(); /* eslint new-cap: 0 */
+  const tfaStore =
+    config.flags?.tfa === true ? new TfaStore(storage, config.secret, auth.logger) : undefined;
   route.post(
     WebUrls.user_login,
     rateLimit(config?.userRateLimit),
@@ -46,15 +53,38 @@ function addUserAuthApi(auth: Auth, config: Config, storage: Storage): Router {
               res.set(HEADERS.WWW_AUTH, TOKEN_BEARER);
             }
             return next(errorUtils.getCode(errorCode, err.message));
-          } else {
-            req.remote_user = user as RemoteUser;
-            const jWTSignOptions: JWTSignOptions = config.security.web.sign;
-            res.set(HEADERS.CACHE_CONTROL, HEADERS.NO_CACHE);
-            return next({
-              token: await auth.jwtEncrypt(user as RemoteUser, jWTSignOptions),
-              username: req.remote_user.name,
-            });
           }
+
+          // password alone must not mint a web session for a two-factor
+          // account; the dialog posts the code as `otp` in the body
+          if (tfaStore && typeof username === 'string' && username !== '') {
+            try {
+              const record = await tfaStore.get(username);
+              if (record && !record.pending) {
+                const otp =
+                  typeof req.body?.otp === 'string' && req.body.otp !== ''
+                    ? req.body.otp
+                    : req.get('npm-otp');
+                const valid = typeof otp === 'string' && (await tfaStore.verify(username, otp));
+                if (!valid) {
+                  res.set(HEADERS.WWW_AUTH, 'otp');
+                  res.status(HTTP_STATUS.UNAUTHORIZED);
+                  res.json({ error: OTP_REQUIRED_MESSAGE, otpRequired: true });
+                  return;
+                }
+              }
+            } catch (storeErr: any) {
+              return next(errorUtils.getInternalError(storeErr?.message));
+            }
+          }
+
+          req.remote_user = user as RemoteUser;
+          const jWTSignOptions: JWTSignOptions = config.security.web.sign;
+          res.set(HEADERS.CACHE_CONTROL, HEADERS.NO_CACHE);
+          return next({
+            token: await auth.jwtEncrypt(user as RemoteUser, jWTSignOptions),
+            username: req.remote_user.name,
+          });
         }
       );
     }

@@ -5,7 +5,7 @@ import { head, isNil } from 'lodash-es';
 import { PLUGIN_CATEGORY, PLUGIN_UI_PREFIX } from '@verdaccio/core';
 import { asyncLoadPlugin } from '@verdaccio/loaders';
 import { logger } from '@verdaccio/logger';
-import { webMiddleware } from '@verdaccio/middleware';
+import { enforceGeneratedTokenMetadata, webMiddleware } from '@verdaccio/middleware';
 import defaultTheme from '@verdaccio/ui-theme';
 
 import webEndpointsApi from './api';
@@ -60,7 +60,15 @@ export default async (config, auth, storage, logger) => {
       config,
       {
         tokenMiddleware: auth.webUIJWTmiddleware(),
-        webEndpointsApi: webEndpointsApi(auth, storage, config),
+        // enforce generated-token metadata (revocation, CIDR, readonly,
+        // package scope) on /-/verdaccio/* — the JWT middleware now preserves
+        // the token claim so the check has the key it needs
+        webEndpointsApi: (() => {
+          const apiRouter = express.Router();
+          apiRouter.use(enforceGeneratedTokenMetadata(storage, logger));
+          apiRouter.use(webEndpointsApi(auth, storage, config));
+          return apiRouter;
+        })(),
         getPackageSeo: buildPackageSeoResolver(storage, auth, config),
       },
       pluginOptions

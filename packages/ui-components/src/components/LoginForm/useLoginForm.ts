@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { type UseFormReturn, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 
@@ -14,9 +14,11 @@ type Options = {
 
 export function useLoginForm({ onSuccess }: Options = {}): UseFormReturn<LoginFormValues> & {
   onSubmit: (data: LoginFormValues) => Promise<void>;
+  otpRequired: boolean;
 } {
   const { handleLogin } = useAuth();
   const { t } = useTranslation();
+  const [otpRequired, setOtpRequired] = useState(false);
 
   const form = useForm<LoginFormValues>({
     mode: 'onChange',
@@ -39,6 +41,16 @@ export function useLoginForm({ onSuccess }: Options = {}): UseFormReturn<LoginFo
         await handleLogin?.(data);
         onSuccess?.();
       } catch (err: any) {
+        // a two-factor challenge is not a failure — reveal the OTP field and
+        // let the user retry with the code from their authenticator
+        if (err?.otpRequired === true) {
+          setOtpRequired(true);
+          setError('root', {
+            type: 'server',
+            message: t('security.error.otp-required'),
+          });
+          return;
+        }
         // only a 401 means wrong credentials; a dead server, 500 or 429 must
         // not claim the credentials were invalid
         const message =
@@ -56,5 +68,6 @@ export function useLoginForm({ onSuccess }: Options = {}): UseFormReturn<LoginFo
   return {
     ...form,
     onSubmit,
+    otpRequired,
   };
 }

@@ -2,6 +2,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Link, Typography } from '@mui/material';
 import React, { useCallback, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 
@@ -63,6 +64,7 @@ const Login: React.FC = () => {
   // `disabled={isSubmitting}` only applies after a re-render; clicks landing in
   // the same React batch would still fire duplicate requests
   const inFlight = useRef(false);
+  const [otpRequired, setOtpRequired] = useState(false);
 
   const onSubmit = useCallback(
     async (data: LoginFormValues) => {
@@ -81,6 +83,15 @@ const Login: React.FC = () => {
         setUserState?.({ username: result.username, token: result.token });
         onSuccess();
       } catch (err: any) {
+        // a two-factor challenge is not a failure — reveal the OTP field
+        if (err?.otpRequired === true) {
+          setOtpRequired(true);
+          setError('root', {
+            type: 'server',
+            message: t('security.error.otp-required'),
+          });
+          return;
+        }
         // only a 401 means wrong credentials; a dead server, 500 or 429 must
         // not claim the credentials were invalid
         const message =
@@ -111,6 +122,7 @@ const Login: React.FC = () => {
             isValid={isValid}
             next={next}
             onSubmit={onSubmit}
+            otpRequired={otpRequired}
             register={register}
           />
           {createUserEnabled && (

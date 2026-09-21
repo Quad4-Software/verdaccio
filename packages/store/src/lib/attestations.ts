@@ -68,13 +68,54 @@ export function predicateTypeFromBundle(bundle: any): string | null {
 }
 
 /**
+ * Decode the in-toto Statement inside a DSSE envelope; null when missing.
+ */
+function statementFromBundle(bundle: any): any {
+  try {
+    return JSON.parse(Buffer.from(bundle.dsseEnvelope.payload, 'base64').toString('utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A bundle only counts as provenance for this publish when its statement
+ * subjects point at the tarball being stored: the sha512 digest must match
+ * the uploaded bytes and the subject name must reference the same package
+ * and version. Statements without subjects cannot be bound at all.
+ */
+function subjectMatches(
+  statement: any,
+  expected: { name: string; version: string; sha512: string }
+): boolean {
+  const subjects = statement?.subject;
+  if (Array.isArray(subjects) === false || subjects.length === 0) {
+    return false;
+  }
+  return subjects.some((subject: any) => {
+    const digest = subject?.digest?.sha512;
+    const subjectName = typeof subject?.name === 'string' ? subject.name : '';
+    return (
+      typeof digest === 'string' &&
+      digest.toLowerCase() === expected.sha512.toLowerCase() &&
+      (subjectName === `pkg:npm/${expected.name}@${expected.version}` ||
+        subjectName === `${expected.name}@${expected.version}` ||
+        subjectName === expected.name)
+    );
+  });
+}
+
+/**
  * Pull the `.sigstore` attachments out of a publish body and return them as
  * attestations keyed by the version they belong to. Returns null when the
- * publish carries no provenance.
+ * publish carries no provenance. When `expected` is provided, bundles whose
+ * statement subjects do not match the stored tarball are dropped instead of
+ * being advertised as provenance for the wrong artifact.
  */
 export function extractAttestations(
   attachments: AttachMents | undefined,
-  version: string
+  version: string,
+  expected?: { name: string; sha512: string }
 ): Record<string, RegistryAttestation[]> | null {
   if (!attachments) {
     return null;
@@ -90,6 +131,13 @@ export function extractAttestations(
       if (predicateType === null) {
         debug('sigstore attachment %o is not a dsse bundle, skipped', fileName);
         continue;
+      }
+      if (expected) {
+        const statement = statementFromBundle(bundle);
+        if (subjectMatches(statement, { ...expected, version }) === false) {
+          debug('sigstore attachment %o subject does not match publish, skipped', fileName);
+          continue;
+        }
       }
       collected.push({ predicateType, bundle });
     } catch (err: any) {

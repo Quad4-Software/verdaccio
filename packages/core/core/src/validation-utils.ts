@@ -132,13 +132,19 @@ export function validatePassword(
   if (validation instanceof RegExp) {
     regex = validation;
   } else if (typeof validation === 'string') {
+    // an empty pattern matches everything — that is fail-open for a password
+    // policy, so reject it instead
+    if (validation.trim() === '') {
+      return false;
+    }
     // YAML config loads `passwordValidationRegex` as a plain string, and
     // operators commonly write it JS-literal style ('/x{12}$/'); the slashes
     // would otherwise be treated as literal characters and make the pattern
     // unmatchable, rejecting every password
     const literal = validation.match(/^\/(.+)\/([a-z]*)$/s);
     const source = literal ? literal[1] : validation;
-    const flags = literal ? literal[2] : undefined;
+    // g/y flags are stateful via lastIndex — strip them from a reused pattern
+    const flags = literal ? literal[2].replace(/[gy]/g, '') : undefined;
     try {
       regex = new RegExp(source, flags);
     } catch {
@@ -148,6 +154,7 @@ export function validatePassword(
     return false;
   }
 
+  regex.lastIndex = 0;
   return password.match(regex) !== null;
 }
 

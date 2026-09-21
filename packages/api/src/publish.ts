@@ -149,6 +149,7 @@ export default function publish(
     PUBLISH_API_ENDPOINTS.publish_package,
     can('unpublish'),
     requireOtp,
+    requirePackageOtp,
     async function (req: $RequestExtend, res: $ResponseExtend, next: $NextFunctionVer) {
       const packageName = reqUtils.paramToString(req.params.package);
       const rev = reqUtils.paramToString(req.params.revision);
@@ -185,6 +186,7 @@ export default function publish(
     PUBLISH_API_ENDPOINTS.remove_tarball,
     can('unpublish'),
     requireOtp,
+    requirePackageOtp,
     async function (
       req: $RequestExtend,
       res: $ResponseExtend,

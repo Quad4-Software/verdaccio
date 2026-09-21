@@ -13,6 +13,7 @@ import { getConfiguration } from '../../configuration';
 import { Route } from '../../utils';
 import LoginDialogFormError from '../LoginDialog/LoginDialogFormError';
 import OidcLoginButton from './OidcLoginButton';
+import OtpField from './OtpField';
 import PasswordField from './PasswordField';
 import UsernameField from './UsernameField';
 
@@ -27,6 +28,8 @@ const StyledButton = styled(Button)<{ theme?: Theme }>(({ theme }) => ({
 export interface LoginFormValues {
   username: string;
   password: string;
+  /** one-time code, sent only when the server challenged for two-factor */
+  otp?: string;
 }
 
 interface Props {
@@ -36,6 +39,8 @@ interface Props {
   errors: FieldErrors<LoginFormValues>;
   isValid: boolean;
   isSubmitting?: boolean;
+  /** Show the OTP field after the server answered a two-factor challenge. */
+  otpRequired?: boolean;
   /** Post-SSO continuation: the CLI session path on the security page. */
   next?: string;
 }
@@ -47,6 +52,7 @@ const LoginForm: FC<Props> = ({
   errors,
   isValid,
   isSubmitting = false,
+  otpRequired = false,
   next,
 }) => {
   const { t } = useTranslation();
@@ -57,6 +63,7 @@ const LoginForm: FC<Props> = ({
     <StyledForm noValidate={true} onSubmit={handleSubmit(onSubmit)}>
       <UsernameField errors={errors} register={register} />
       <PasswordField errors={errors} register={register} />
+      {otpRequired && <OtpField errors={errors} register={register} />}
 
       {errors.root && <LoginDialogFormError error={errors.root} />}
 

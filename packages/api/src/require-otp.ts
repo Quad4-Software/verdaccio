@@ -35,6 +35,21 @@ export const OTP_CHALLENGE = 'otp';
 const OTP_REQUIRED_MESSAGE =
   'You must provide a one-time pass. Upgrade your client to npm@latest in order to use 2FA.';
 
+const OTP_VERIFIED = Symbol.for('verdaccio.otpVerified');
+
+/**
+ * The npm CLI sends the code in the npm-otp header; the web login form posts
+ * it as an `otp` field in the JSON body — accept either.
+ */
+function otpFrom(req: Request): string | undefined {
+  const header = req.get(OTP_HEADER);
+  if (typeof header === 'string' && header !== '') {
+    return header;
+  }
+  const body = (req as $RequestExtend).body?.otp;
+  return typeof body === 'string' && body !== '' ? body : undefined;
+}
+
 /**
  * Which operations a mode covers.
  *
@@ -63,12 +78,16 @@ function defaultGetUsername(req: Request): string | undefined {
 }
 
 /** Answer 401 in the exact shape npm and Yarn recognise as "send me an OTP". */
-function challenge(res: Response, next: NextFunction): void {
-  // must be set before handing over: `final` only defaults to Bearer when the
-  // header is absent, and Bearer would make both clients give up
+function challenge(res: Response, _next: NextFunction): void {
+  // the header is what npm and Yarn match on; `otpRequired` in the body lets
+  // the web login dialog switch to its OTP field instead of reporting a
+  // generic credentials failure
   res.header(HEADERS.WWW_AUTH, OTP_CHALLENGE);
   res.header('npm-notice', 'Provide a one-time password from your authenticator app.');
-  next(errorUtils.getCode(HTTP_STATUS.UNAUTHORIZED, OTP_REQUIRED_MESSAGE));
+  res.status(HTTP_STATUS.UNAUTHORIZED).json({
+    error: OTP_REQUIRED_MESSAGE,
+    otpRequired: true,
+  });
 }
 
 /**
@@ -116,7 +135,7 @@ export function requireOtp(options: RequireOtpOptions): RequestHandler {
       return next();
     }
 
-    const otp = req.get(OTP_HEADER);
+    const otp = otpFrom(req);
     if (!otp) {
       debug('challenging %o for an OTP', username);
       return challenge(res, next);
@@ -124,6 +143,9 @@ export function requireOtp(options: RequireOtpOptions): RequestHandler {
 
     if (await tfaStore.verify(username, otp)) {
       debug('OTP accepted for %o', username);
+      // replay protection consumes the step — a later OTP middleware on the
+      // same request must accept this verification instead of verifying again
+      (req as any)[OTP_VERIFIED] = true;
       return next();
     }
 
@@ -149,6 +171,21 @@ export function requirePackagePublishOtp(
     if (typeof name !== 'string' || name === '') {
       return next();
     }
+    // npm's package-mfa covers mutations, not the star map — a body whose only
+    // meaningful key is `users` is a star/unstar and skips the package OTP
+    const body = req.body;
+    if (
+      body != null &&
+      typeof body === 'object' &&
+      typeof body.users === 'object' &&
+      body.users !== null &&
+      body._attachments === undefined &&
+      body.versions === undefined &&
+      body['dist-tags'] === undefined &&
+      body.maintainers === undefined
+    ) {
+      return next();
+    }
     let policy;
     try {
       policy = await storage.getPackagePublishPolicy(name);
@@ -165,8 +202,9 @@ export function requirePackagePublishOtp(
       return next();
     }
 
-    const isAutomationToken =
-      user.token?.otpExempt === true || (user.token?.packages?.length ?? 0) > 0;
+    // only OIDC-exchanged CI tokens are "automation" tokens — a plain scoped
+    // token in an interactive session must not bypass the package challenge
+    const isAutomationToken = user.token?.otpExempt === true;
     if (policy.automation_token_overrides_tfa && isAutomationToken) {
       debug('automation token bypasses publish TFA for %o', name);
       return next();
@@ -184,7 +222,24 @@ export function requirePackagePublishOtp(
       );
     }
 
-    const otp = req.get(OTP_HEADER);
+    // a user without two-factor can never answer the challenge — fail with a
+    // clear error instead of looping EOTP forever
+    const record = await tfaStore.get(user.name);
+    if (!record || record.pending) {
+      return next(
+        errorUtils.getForbidden(
+          'this package requires two-factor authentication; enable 2FA on your account first'
+        )
+      );
+    }
+
+    // already verified by the user-level OTP middleware on this request —
+    // the same code would be rejected as a replay if verified again
+    if ((req as any)[OTP_VERIFIED] === true) {
+      return next();
+    }
+
+    const otp = otpFrom(req);
     if (!otp) {
       debug('challenging %o for a package-level OTP on %o', user.name, name);
       return challenge(res, next);

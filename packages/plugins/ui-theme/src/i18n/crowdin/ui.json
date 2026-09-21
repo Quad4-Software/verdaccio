@@ -342,7 +342,9 @@
       "password-mismatch": "Passwords do not match",
       "password-min-length": "Password must be at least {{length}} characters",
       "invalid-credentials": "Invalid username or password",
-      "invalid-next-param": "Missing or invalid next parameter in login request"
+      "invalid-next-param": "Missing or invalid next parameter in login request",
+      "otp-required": "This account has two-factor authentication. Enter the code from your authenticator app.",
+      "otp-required-help": "Code from your authenticator app or a recovery code"
     }
   },
   "about": "About",

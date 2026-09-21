@@ -74,8 +74,23 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
           // TODO: review why this param
           // enableRemote: true,
         })) as any;
-        recordRegistryEvent('tarballDownloads');
-        void storage.recordDownload(pkgName);
+
+        // count a download only once the source stream ended — failed
+        // upstream fetches, aborted clients and HEAD probes must not inflate
+        // the statistics. Stream 'end' precedes res.end(), so the count is
+        // recorded before the client can observe the completed response
+        const isHead = req.method === 'HEAD';
+        let counted = false;
+        const count = (): void => {
+          if (counted || isHead) {
+            return;
+          }
+          counted = true;
+          recordRegistryEvent('tarballDownloads');
+          void storage.recordDownload(pkgName);
+        };
+        stream.once('end', count);
+        res.once('finish', count);
 
         stream.on('content-length', (size) => {
           debug('tarball size %o', size);
@@ -105,9 +120,14 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
           next(err);
         });
 
-        req.on('abort', () => {
-          debug('request aborted for %o', req.url);
-          abort.abort();
+        // 'abort' on the request never fires on modern Node; the response
+        // close event covers client disconnects — skip it when the response
+        // already ended normally
+        res.on('close', () => {
+          if (!res.writableEnded) {
+            debug('client disconnected during download for %o', req.url);
+            abort.abort();
+          }
         });
 
         res.header(HEADERS.CONTENT_TYPE, HEADERS.OCTET_STREAM);

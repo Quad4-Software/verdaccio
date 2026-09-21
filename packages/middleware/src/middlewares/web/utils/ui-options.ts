@@ -49,9 +49,9 @@ export function getUIOptions(
   const pkgManagers = config?.web?.pkgManagers ?? ['yarn', 'pnpm', 'npm'];
   const version = config?.web?.showVersion === false ? undefined : (res.locals.app_version ?? '');
   const flags = {
-    ...config.flags,
-    // legacy from 5.x
+    // legacy from 5.x — the modern `flags` key must win on conflicts
     ...config.experiments,
+    ...config.flags,
   };
   const primaryColor =
     validatePrimaryColor(config?.web?.primary_color ?? config?.web?.primaryColor) ?? '#0A0A0B';

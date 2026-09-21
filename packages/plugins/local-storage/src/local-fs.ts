@@ -112,12 +112,13 @@ export default class LocalFS implements ILocalFSPackageManager {
       if (locked) {
         try {
           await this._unlockJSON(packageJSONFileName);
-          // after unlock bubble up error.
-          throw err;
         } catch {
           // unlock could fail, we bubble up error
           throw errorUtils.getInternalError('resource temporarily unavailable');
         }
+        // after unlock bubble up error — this must stay outside the try or the
+        // catch below would mask it as a lock failure
+        throw err;
       } else {
         if (err.code === resourceNotAvailable) {
           throw errorUtils.getInternalError('resource temporarily unavailable');

@@ -12,6 +12,7 @@ import {
 import { Storage, assertPackageVisibility, canPublish } from '@verdaccio/store';
 import type { Config, Logger } from '@verdaccio/types';
 
+import { assertPackageAccess } from './collaborator-access';
 import type { $NextFunctionVer, $RequestExtend, $ResponseExtend } from '../types/custom';
 
 const debug = buildDebug('verdaccio:api:registry');
@@ -25,9 +26,18 @@ function toDay(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function eachDay(start: string, end: string): string[] {
+function eachDay(start: string, end: string): string[] | null {
+  const startMs = Date.parse(`${start}T00:00:00Z`);
+  const endMs = Date.parse(`${end}T00:00:00Z`);
+  if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs < startMs) {
+    return null;
+  }
+  // check the span before materialising the array
+  if (Math.floor((endMs - startMs) / DAY) + 1 > MAX_RANGE_DAYS) {
+    return null;
+  }
   const days: string[] = [];
-  for (let t = Date.parse(`${start}T00:00:00Z`); t <= Date.parse(`${end}T00:00:00Z`); t += DAY) {
+  for (let t = startMs; t <= endMs; t += DAY) {
     days.push(toDay(new Date(t)));
   }
   return days;
@@ -67,10 +77,14 @@ function bearerMatches(provided: string | undefined, expected: string): boolean 
     return false;
   }
   const token = provided.slice(7);
-  if (token.length !== expected.length) {
+  // timingSafeEqual needs equal-length buffers — compare byte length, not
+  // string length, or multibyte tokens would throw instead of failing closed
+  const tokenBuffer = Buffer.from(token);
+  const expectedBuffer = Buffer.from(expected);
+  if (tokenBuffer.length !== expectedBuffer.length) {
     return false;
   }
-  return timingSafeEqual(Buffer.from(token), Buffer.from(expected));
+  return timingSafeEqual(tokenBuffer, expectedBuffer);
 }
 
 /**
@@ -98,6 +112,11 @@ export function metrics(route: Router, config: Config, storage: Storage, logger:
           bearerMatches(req.get('authorization'), metricsConfig.token) === false
         ) {
           throw errorUtils.getUnauthorized('metrics token required');
+        }
+        if (typeof metricsConfig?.token !== 'string' || metricsConfig.token === '') {
+          // the endpoint is opt-in but still leaks package counts when no
+          // token is configured — say so loudly once
+          logger.warn('metrics endpoint is enabled without a token and is world-readable');
         }
         const requests = getRequestMetrics();
         const events = getRegistryMetrics();
@@ -185,6 +204,8 @@ export default function (
         const name = spec.slice(0, at);
         const version = spec.slice(at + 1);
         debug('attestations for %o@%o', name, version);
+        // same gate as the packument route: access rules, then visibility
+        await assertPackageAccess(auth, storage, name, req.remote_user);
         await assertPackageVisibility(auth, storage, name, req.remote_user);
         const attestations = await storage.getAttestations(name, version);
         if (attestations.length === 0) {
@@ -225,12 +246,17 @@ export default function (
           if ((pkg as any).users?.[username as string] !== true) {
             continue;
           }
-          // a starred private package must not leak its name to a caller who
-          // could not publish it — same rule the search endpoint applies
-          if (
-            (pkg as any).visibility === 'private' &&
-            (await canPublish(auth, pkg.name, req.remote_user)) === false
-          ) {
+          // a starred package must not leak its name to a caller the access
+          // rules or the private flag would hide it from
+          try {
+            await assertPackageAccess(auth, storage, pkg.name, req.remote_user);
+            if (
+              (pkg as any).visibility === 'private' &&
+              (await canPublish(auth, pkg.name, req.remote_user)) === false
+            ) {
+              continue;
+            }
+          } catch {
             continue;
           }
           rows.push({ value: pkg.name });
@@ -266,11 +292,12 @@ export default function (
           throw errorUtils.getBadRequest(`invalid period ${period}`);
         }
         const days = eachDay(range.start, range.end);
-        if (days.length > MAX_RANGE_DAYS) {
-          throw errorUtils.getBadRequest(`period exceeds ${MAX_RANGE_DAYS} days`);
+        if (days === null) {
+          throw errorUtils.getBadRequest(`invalid or too long period ${period}`);
         }
 
         if (typeof packageName === 'string') {
+          await assertPackageAccess(auth, storage, packageName, req.remote_user);
           await assertPackageVisibility(auth, storage, packageName, req.remote_user);
           const stats = await storage.getPackageDownloads(packageName);
           if (kind === 'point') {
@@ -290,6 +317,7 @@ export default function (
         const visible: Record<string, Record<string, number>> = {};
         for (const name of Object.keys(allStats)) {
           try {
+            await assertPackageAccess(auth, storage, name, req.remote_user);
             await assertPackageVisibility(auth, storage, name, req.remote_user);
             visible[name] = allStats[name];
           } catch {

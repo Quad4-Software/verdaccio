@@ -94,6 +94,8 @@ export interface Storage<PluginConfig> extends Plugin<PluginConfig> {
   getPackageDownloads?(packageName: string): Promise<Record<string, number>>;
   /** Per-day download counters for every package, keyed by package then day. */
   getAllPackageDownloads?(): Promise<Record<string, Record<string, number>>>;
+  /** Drop a removed package's counters; optional like the rest of stats. */
+  deletePackageStats?(packageName: string): Promise<void>;
 }
 
 // --- MIDDLEWARE PLUGIN ---

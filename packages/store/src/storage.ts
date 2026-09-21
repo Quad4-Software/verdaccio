@@ -39,6 +39,7 @@ import {
   convertDistVersionToLocalTarballsUrl,
   getTarballDetails,
 } from '@verdaccio/tarball';
+import semver from 'semver';
 import type {
   AbbreviatedManifest,
   AbbreviatedVersions,
@@ -112,6 +113,7 @@ class Storage {
   private stageStorage: StageStorage | null = null;
   private signer: RegistrySigner | null = null;
   private retentionTimer: NodeJS.Timeout | null = null;
+  private retentionSweepInFlight = false;
   private storageSizeCache: { bytes: number; measuredAt: number } | null = null;
   public constructor(config: Config, logger: Logger) {
     this.config = config;
@@ -131,7 +133,12 @@ class Storage {
    Function changes a package info from local storage and all uplinks with write access./
    Used storages: local (write)
    */
-  public async changePackage(name: string, metadata: Manifest, revision: string): Promise<void> {
+  public async changePackage(
+    name: string,
+    metadata: Manifest,
+    revision: string,
+    username?: string
+  ): Promise<void> {
     debug('change existing package for package %o revision %o', name, revision);
     debug(`change manifest tags for %o revision %o`, name, revision);
     if (
@@ -144,22 +151,53 @@ class Storage {
 
     debug(`change manifest updating manifest for %o`, name);
     await this.updatePackage(name, async (localData: Manifest): Promise<Manifest> => {
+      const removedVersions = Object.keys(localData.versions).filter(
+        (version) => isNil(metadata.versions[version]) === true
+      );
+      const maintainersChanged =
+        typeof metadata[MAINTAINERS] !== 'undefined' &&
+        isEqual(metadata[MAINTAINERS], localData[MAINTAINERS]) === false;
+      const distTagsChanged = isEqual(metadata[DIST_TAGS], localData[DIST_TAGS]) === false;
+      // deprecate bodies echo the whole packument; anything beyond flipping a
+      // deprecated flag — dropping versions, rewriting maintainers or tags —
+      // is an owner-level change and must not be possible with publish rights
+      const owners = localData[MAINTAINERS] ?? [];
+      if (
+        owners.length > 0 &&
+        (removedVersions.length > 0 || maintainersChanged || distTagsChanged)
+      ) {
+        const isOwner = owners.some(
+          (maintainer) =>
+            (typeof maintainer === 'string' ? maintainer : maintainer?.name) === username
+        );
+        if (isOwner === false) {
+          throw errorUtils.getForbidden('only owners can remove versions, maintainers or tags');
+        }
+      }
+
       // eslint-disable-next-line guard-for-in
+      for (const version of removedVersions) {
+        this.logger.info({ name: name, version: version }, 'unpublishing @{name}@@{version}');
+
+        // FIXME: I prefer return a new object rather mutate the metadata
+        delete localData.versions[version];
+        delete localData.time![version];
+        if (localData._attestations) {
+          delete localData._attestations[version];
+        }
+
+        for (const file in localData._attachments) {
+          if (localData._attachments[file].version === version) {
+            delete localData._attachments[file].version;
+          }
+        }
+      }
       for (const version in localData.versions) {
         const incomingVersion = metadata.versions[version];
-        if (isNil(incomingVersion)) {
-          this.logger.info({ name: name, version: version }, 'unpublishing @{name}@@{version}');
-
-          // FIXME: I prefer return a new object rather mutate the metadata
-          delete localData.versions[version];
-          delete localData.time![version];
-
-          for (const file in localData._attachments) {
-            if (localData._attachments[file].version === version) {
-              delete localData._attachments[file].version;
-            }
-          }
-        } else if (Object.prototype.hasOwnProperty.call(incomingVersion, 'deprecated')) {
+        if (
+          isNil(incomingVersion) === false &&
+          Object.prototype.hasOwnProperty.call(incomingVersion, 'deprecated')
+        ) {
           const incomingDeprecated = incomingVersion.deprecated;
           if (incomingDeprecated != localData.versions[version].deprecated) {
             if (!incomingDeprecated) {
@@ -177,12 +215,36 @@ class Storage {
         }
       }
 
-      // a body without a users map must not wipe the stored stars
-      if (typeof metadata[USERS] !== 'undefined') {
-        localData[USERS] = metadata[USERS];
+      // a body without a users map must not wipe the stored stars, and only a
+      // real map is stored — anything else would erase every entry
+      if (validationUtils.isObject(metadata[USERS])) {
+        const users = { ...metadata[USERS] };
+        if (typeof username === 'string' && Object.hasOwn(users, username)) {
+          users[username] = users[username] === true;
+        }
+        localData[USERS] = users;
+      }
+      // absent maintainers must not orphan the package either
+      if (typeof metadata[MAINTAINERS] !== 'undefined') {
+        localData[MAINTAINERS] = metadata[MAINTAINERS];
       }
       localData[DIST_TAGS] = metadata[DIST_TAGS];
-      localData[MAINTAINERS] = metadata[MAINTAINERS];
+      // removal can leave dist-tags dangling; mergeTagsNext never allows a tag
+      // pointing at a missing version, so fix them here too — npm retargets
+      // latest to the newest surviving version, other tags are dropped
+      for (const tag of Object.keys(localData[DIST_TAGS] ?? {})) {
+        if (isNil(localData.versions[localData[DIST_TAGS][tag]]) === false) {
+          continue;
+        }
+        if (tag === 'latest') {
+          const surviving = Object.keys(localData.versions);
+          if (surviving.length > 0) {
+            localData[DIST_TAGS][tag] = surviving.reduce((a, b) => (isNewerVersion(a, b) ? a : b));
+            continue;
+          }
+        }
+        delete localData[DIST_TAGS][tag];
+      }
       return localData;
     });
   }
@@ -320,11 +382,31 @@ class Storage {
           (item.package.version !== previous.package.version &&
             isNewerVersion(item.package.version, previous.package.version))
         ) {
-          // Replacing metadata must not move a package to a later page.
+          // a remote item shadowing a local package must keep the local
+          // visibility flag — the merged result still represents our package
+          if (item.visibility === undefined && previous) {
+            item.visibility = previous.visibility;
+          }
+          // uplinks that omit a score would otherwise drop the merged entry to
+          // rank zero; the local score stands in when the remote has none
+          if (
+            previous &&
+            typeof item.score?.final !== 'number' &&
+            typeof item.searchScore !== 'number'
+          ) {
+            item.score = previous.score;
+            item.searchScore = previous.searchScore;
+          }
           merged.set(item.package.name, item);
         }
       }
-      return [...merged.values()];
+      // npm ranks search results by score across local and uplink hits, not
+      // by which source answered first
+      const ranked = [...merged.values()];
+      ranked.sort(
+        (a, b) => (b.score?.final ?? b.searchScore ?? 0) - (a.score?.final ?? a.searchScore ?? 0)
+      );
+      return ranked;
     };
     // Complete the first remote round before selecting a page so duplicate remote
     // versions participate even when local results alone would fill it.
@@ -678,7 +760,7 @@ class Storage {
    */
   private injectAttestationRefs(manifest: Manifest, requestOptions: any): void {
     const stored = manifest._attestations;
-    if (isNil(stored)) {
+    if (typeof stored !== 'object' || stored === null) {
       return;
     }
     let base: string;
@@ -872,6 +954,22 @@ class Storage {
   }
 
   /**
+   * Drop the download counters of a removed package. Optional plugin
+   * capability — missing it must never break an unpublish.
+   */
+  public async deletePackageStats(name: string): Promise<void> {
+    const plugin = this.localStorage.getStoragePlugin();
+    if (typeof plugin.deletePackageStats !== 'function') {
+      return;
+    }
+    try {
+      await plugin.deletePackageStats(name);
+    } catch (err: any) {
+      this.logger.warn({ name, err }, 'download stats cleanup failed for @{name}: @{err.message}');
+    }
+  }
+
+  /**
    * Public signing keys for `npm audit signatures`, or null when registry
    * signing is disabled (`security.signatures.enabled`).
    */
@@ -1054,54 +1152,88 @@ class Storage {
     if (cfg?.enabled !== true) {
       return null;
     }
-    const report: RetentionReport = { dryRun: cfg.dry_run === true, removed: [], errors: [] };
-    const names: string[] = await this.localStorage.getStoragePlugin().get();
-    for (const name of names) {
-      if (report.removed.length >= MAX_REMOVALS_PER_SWEEP) {
-        break;
-      }
-      if (isExcluded(name, cfg.exclude)) {
-        continue;
-      }
-      try {
-        const manifest = await this.getPackageLocalMetadata(name);
-        const removals = computePrunableVersions(manifest, cfg);
-        for (const removal of removals) {
-          report.removed.push(removal);
-          if (report.dryRun) {
-            continue;
-          }
-          const tarballName = tarballUtils.composeTarballFromPackage(name, removal.version);
-          await this.updatePackage(name, async (data: Manifest): Promise<Manifest> => {
-            const updated: Manifest = { ...data };
-            delete updated.versions[removal.version];
-            delete updated.time?.[removal.version];
-            if (updated._attestations) {
-              delete updated._attestations[removal.version];
-            }
-            if (updated._attachments) {
-              delete updated._attachments[tarballName];
-            }
-            return updated;
-          });
-          try {
-            const storage = this.getPrivatePackageStorage(name);
-            await storage.deletePackage(tarballName);
-          } catch (err: any) {
-            if (err?.code !== noSuchFile) {
-              throw err;
-            }
-          }
-          this.logger.info(
-            { name, version: removal.version, reason: removal.reason },
-            'retention removed @{name}@@{version} (@{reason})'
-          );
-        }
-      } catch (err: any) {
-        report.errors.push({ name, message: err?.message ?? 'unknown error' });
-      }
+    if (this.retentionSweepInFlight) {
+      debug('retention sweep already running, skipping overlapping run');
+      return null;
     }
-    return report;
+    this.retentionSweepInFlight = true;
+    try {
+      const report: RetentionReport = { dryRun: cfg.dry_run === true, removed: [], errors: [] };
+      const names: string[] = await this.localStorage.getStoragePlugin().get();
+      for (const name of names) {
+        if (report.removed.length >= MAX_REMOVALS_PER_SWEEP) {
+          break;
+        }
+        if (isExcluded(name, cfg.exclude)) {
+          continue;
+        }
+        try {
+          const manifest = await this.getPackageLocalMetadata(name);
+          const removals = computePrunableVersions(manifest, cfg);
+          for (const removal of removals) {
+            if (report.removed.length >= MAX_REMOVALS_PER_SWEEP) {
+              break;
+            }
+            if (report.dryRun) {
+              report.removed.push(removal);
+              continue;
+            }
+            // the stored attachment key wins over the composed name — a
+            // publish may have used a non-canonical tarball filename
+            const tarballName =
+              Object.keys(manifest._attachments ?? {}).find(
+                (file) => manifest._attachments?.[file]?.version === removal.version
+              ) ?? tarballUtils.composeTarballFromPackage(name, removal.version);
+            await this.updatePackage(name, async (data: Manifest): Promise<Manifest> => {
+              const updated: Manifest = { ...data };
+              delete updated.versions[removal.version];
+              delete updated.time?.[removal.version];
+              if (updated._attestations) {
+                delete updated._attestations[removal.version];
+              }
+              if (updated._attachments) {
+                delete updated._attachments[tarballName];
+              }
+              // keep_tagged: false can leave a tag pointing at a removed
+              // version — retarget latest, drop the rest
+              const tags = updated[DIST_TAGS];
+              if (validationUtils.isObject(tags)) {
+                for (const tag of Object.keys(tags)) {
+                  if (tags[tag] !== removal.version) {
+                    continue;
+                  }
+                  const surviving = Object.keys(updated.versions);
+                  if (tag === 'latest' && surviving.length > 0) {
+                    tags[tag] = surviving.reduce((a, b) => (isNewerVersion(a, b) ? a : b));
+                  } else {
+                    delete tags[tag];
+                  }
+                }
+              }
+              return updated;
+            });
+            try {
+              const storage = this.getPrivatePackageStorage(name);
+              await storage.deletePackage(tarballName);
+            } catch (err: any) {
+              if (err?.code !== noSuchFile) {
+                throw err;
+              }
+            }
+            report.removed.push(removal);
+            this.logger.info(
+              { name, version: removal.version, reason: removal.reason },
+              'retention removed @{name}@@{version} (@{reason})'
+            );
+          }
+        } catch (err: any) {
+          report.errors.push({ name, message: err?.message ?? 'unknown error' });
+        }
+      }
+      return report;
+    } finally {
+      this.retentionSweepInFlight = false;
+    }
   }
 
   /**
@@ -1113,7 +1245,13 @@ class Storage {
     if (cfg?.enabled !== true || this.retentionTimer !== null) {
       return;
     }
-    const intervalMinutes = cfg.interval_minutes ?? RETENTION_DEFAULT_INTERVAL_MINUTES;
+    // a non-positive or non-numeric interval would spin the sweep loop
+    const intervalMinutes =
+      typeof cfg.interval_minutes === 'number' &&
+      Number.isFinite(cfg.interval_minutes) &&
+      cfg.interval_minutes > 0
+        ? cfg.interval_minutes
+        : RETENTION_DEFAULT_INTERVAL_MINUTES;
     const run = (): void => {
       this.runRetentionSweep()
         .then((report) => {
@@ -1265,21 +1403,35 @@ class Storage {
         for (const [pkgName, days] of Object.entries(allDownloads)) {
           downloadTotals.set(
             pkgName,
-            Object.values(days).reduce((sum: number, n) => sum + n, 0)
+            Object.values(days).reduce(
+              (sum: number, n) => sum + (Number.isFinite(n) ? (n as number) : 0),
+              0
+            )
           );
         }
         const maxDownloads = Math.max(0, ...downloadTotals.values());
         for (const searchItem of items) {
-          const manifest = await this.getPackageLocalMetadata(searchItem.package.name);
-          const [filteredManifest] = await this.applyFilters(manifest);
+          // one malformed manifest must not fail the whole search
+          let filteredManifest;
+          try {
+            const manifest = await this.getPackageLocalMetadata(searchItem.package.name);
+            [filteredManifest] = await this.applyFilters(manifest);
+          } catch (err: any) {
+            this.logger.warn(
+              { err, packageName: searchItem.package.name },
+              'search skipped unreadable package @{packageName}: @{err.message}'
+            );
+            continue;
+          }
           if (isEmpty(filteredManifest?.versions) === false) {
             const searchPackage = mapManifestToSearchPackageBody(filteredManifest, searchItem);
             debug('search local stream found %o', searchPackage.name);
             const quality = searchUtils.computeQuality(searchPackage);
-            const popularity = searchUtils.computePopularity(
-              downloadTotals.get(searchPackage.name) ?? 0,
-              maxDownloads
-            );
+            const downloads = downloadTotals.get(searchPackage.name) ?? 0;
+            const popularity =
+              maxDownloads > 0 && Number.isFinite(downloads)
+                ? searchUtils.computePopularity(downloads, maxDownloads)
+                : 0;
             const maintenance = searchUtils.computeMaintenance(searchPackage.date);
             const searchPackageItem: searchUtils.SearchPackageItem = {
               package: searchPackage,
@@ -1363,6 +1515,7 @@ class Storage {
       // remove folder
       debug('remove package folder');
       await storage.removePackage(pkgName);
+      await this.deletePackageStats(pkgName);
       this.logger.info({ pkgName }, 'package @{pkgName} removed');
     } catch (err: any) {
       this.logger.error({ err }, 'removed package has failed: @{err.message}');
@@ -1607,7 +1760,12 @@ class Storage {
       });
       this.assertOwnUserKey(localPackage.users, manifest.users, options.requestOptions.username);
     }
-    return this.changePackage(name, manifest, options.revision as string);
+    return this.changePackage(
+      name,
+      manifest,
+      options.revision as string,
+      options.requestOptions.username
+    );
   }
 
   private async unPublishAPackage(manifest: UnPublishManifest, options: UpdateManifestOptions) {
@@ -1629,10 +1787,16 @@ class Storage {
       );
     }
     if (localPackage._rev === manifest._rev) {
-      await this.changePackage(name, manifest as Manifest, options.revision as string);
+      await this.changePackage(
+        name,
+        manifest as Manifest,
+        options.revision as string,
+        requestOptions.username
+      );
+      return API_MESSAGE.PKG_CHANGED;
     }
-
-    return API_MESSAGE.PKG_CHANGED;
+    // a stale revision is a conflict, not a silent success
+    throw errorUtils.getConflict('revision mismatch');
   }
 
   /**
@@ -1648,7 +1812,8 @@ class Storage {
     const next = after ?? {};
     const keys = new Set([...Object.keys(previous), ...Object.keys(next)]);
     for (const key of keys) {
-      if (Boolean(previous[key]) !== Boolean(next[key]) && key !== username) {
+      // strict compare: a truthy-but-not-true value must not erase a star
+      if (previous[key] !== next[key] && key !== username) {
         throw errorUtils.getForbidden('star entries can only be changed for the own user');
       }
     }
@@ -1674,6 +1839,9 @@ class Storage {
     const localPackage = await this.getPackageLocalMetadata(name);
 
     if (typeof users !== 'undefined') {
+      if (validationUtils.isObject(users) === false) {
+        throw errorUtils.getBadRequest('users must be an object');
+      }
       this.assertOwnUserKey(localPackage.users, users, username);
     }
     if (Array.isArray(maintainers)) {
@@ -1686,7 +1854,11 @@ class Storage {
     await this.updatePackage(name, async (data: Manifest): Promise<Manifest> => {
       const updated: Manifest = { ...data };
       if (typeof users !== 'undefined') {
-        updated.users = users;
+        const sanitized = { ...users };
+        if (Object.hasOwn(sanitized, username)) {
+          sanitized[username] = sanitized[username] === true;
+        }
+        updated.users = sanitized;
       }
       if (Array.isArray(maintainers)) {
         updated.maintainers = maintainers as Author[];
@@ -1770,22 +1942,38 @@ class Storage {
     }
 
     // get the unique version available
-    const [versionToPublish] = Object.keys(versions);
+    const [versionToPublish] = Object.keys(versions ?? {});
+    // an empty versions map or a key that is not a version (__proto__ and
+    // friends included) must not reach storage
+    if (
+      typeof versionToPublish !== 'string' ||
+      semver.valid(versionToPublish) === null ||
+      validationUtils.isObject(versions[versionToPublish]) === false
+    ) {
+      throw errorUtils.getBadRequest(API_ERROR.UNSUPORTED_REGISTRY_CALL);
+    }
 
     // npm --provenance adds a second .sigstore attachment next to the tarball;
     // pick the tarball deliberately so the bundle is never treated as content
     const tarballKey = pickTarballAttachmentKey(_attachments, name, versionToPublish);
-    if (isNil(tarballKey)) {
+    if (typeof tarballKey !== 'string') {
       throw errorUtils.getBadRequest(API_ERROR.UNSUPORTED_REGISTRY_CALL);
     }
     const buffer = this.getBufferManifest(body._attachments[tarballKey].data as string);
-    const attestations = extractAttestations(_attachments, versionToPublish);
+    // the subject check in the bundle needs the digest of what we actually
+    // store — the same sha512 the registry later signs
+    const tarballSha512 = createHash('sha512').update(buffer).digest('hex');
+    const attestations = extractAttestations(_attachments, versionToPublish, {
+      name,
+      sha512: tarballSha512,
+    });
     await this.assertStorageQuota(buffer.length);
 
     let createdNewPackage = false;
+    let localManifest: Manifest | null = null;
     try {
       // we check if package exist already locally
-      const localManifest = await this.getPackagelocalByName(name);
+      localManifest = await this.getPackagelocalByName(name);
       // if continue, the version to be published does not exist
       if (localManifest?.versions[versionToPublish] != null) {
         debug('%s version %s already exists (locally)', name, versionToPublish);
@@ -1843,6 +2031,39 @@ class Storage {
             'publish rollback failed for @{name}: @{err.message}'
           );
         }
+      } else if (localManifest !== null) {
+        // on an existing package a failed upload would leave a version entry
+        // whose tarball never landed — roll the manifest back to the
+        // pre-publish snapshot instead of serving a 404 version forever
+        const snapshot = localManifest;
+        try {
+          await this.updatePackage(name, async (data: Manifest): Promise<Manifest> => {
+            const restored: Manifest = { ...data };
+            restored.versions = { ...restored.versions };
+            delete restored.versions[versionToPublish];
+            restored.time = { ...restored.time };
+            delete restored.time![versionToPublish];
+            restored[DIST_TAGS] = { ...snapshot[DIST_TAGS] };
+            if (restored._attestations) {
+              restored._attestations = { ...restored._attestations };
+              delete restored._attestations[versionToPublish];
+            }
+            restored._attachments = { ...restored._attachments };
+            for (const file of Object.keys(restored._attachments)) {
+              if (restored._attachments[file]?.version === versionToPublish) {
+                delete restored._attachments[file];
+              }
+            }
+            return restored;
+          });
+          const storage = this.getPrivatePackageStorage(name);
+          await storage?.deletePackage(basename(tarballKey)).catch(() => {});
+        } catch (cleanupErr: any) {
+          this.logger.warn(
+            { err: cleanupErr, name },
+            'publish rollback failed for @{name}: @{err.message}'
+          );
+        }
       }
       throw err;
     }
@@ -1875,14 +2096,20 @@ class Storage {
     try {
       const tarballStats = await this.getTarballStats(versionMeta, buffer);
       // dist may be absent entirely for metadata-only publishes; signing and
-      // integrity only apply when the client sent a dist block
-      if (isNil(versionMeta.dist) === false) {
-        // signatures and clients require an integrity value; fill it when absent
-        if (isNil(versionMeta.dist.integrity) || versionMeta.dist.integrity === '') {
-          versionMeta.dist.integrity = `sha512-${createHash('sha512')
-            .update(buffer)
-            .digest('base64')}`;
-        }
+      // integrity only apply when the client sent a real dist object
+      // scan verdicts are registry-produced — a publisher must not inject one
+      delete versionMeta.scan;
+      if (validationUtils.isObject(versionMeta.dist)) {
+        // signatures and attestation refs are registry-produced too
+        delete versionMeta.dist.attestations;
+        delete versionMeta.dist.signatures;
+        delete versionMeta.dist['npm-signature'];
+        // integrity must describe the uploaded bytes, not what the client
+        // claims — like npmjs, recompute it so a signed signature covers the
+        // real tarball
+        versionMeta.dist.integrity = `sha512-${createHash('sha512')
+          .update(buffer)
+          .digest('base64')}`;
         if (this.signer !== null) {
           versionMeta.dist.signatures = [
             this.signer.sign(name, versionToPublish, versionMeta.dist.integrity),
@@ -2486,7 +2713,7 @@ class Storage {
     //  if no uplinks match we return the local manifest
     if (upLinks.length === 0) {
       debug('no uplinks found for %o, upstream update aborted', name);
-      if (isNil(localManifest)) {
+      if (localManifest === null) {
         return [null, []];
       }
 
@@ -2497,9 +2724,8 @@ class Storage {
     // we resolve uplinks async in series, first come first serve
     for (const uplink of upLinks) {
       try {
-        const tempManifest = isNil(localManifest)
-          ? generatePackageTemplate(name)
-          : { ...localManifest };
+        const tempManifest: Manifest =
+          localManifest === null ? generatePackageTemplate(name) : { ...localManifest };
         syncManifest = await this.mergeCacheRemoteMetadata(
           this.uplinks[uplink],
           tempManifest,
@@ -2524,7 +2750,7 @@ class Storage {
       // plugin filter applied to the manifest
       const [filteredManifest, filtersErrors] = await this.applyFilters(updatedCacheManifest);
       return [filteredManifest, [...uplinksErrors, ...filtersErrors]];
-    } else if (found && isNil(localManifest) === false) {
+    } else if (found && localManifest !== null) {
       // apply filter to local manifest (it is cached in unfiltered state)
       const [filteredManifest, filtersErrors] = await this.applyFilters(localManifest);
       return [filteredManifest, [...uplinksErrors, ...filtersErrors]];

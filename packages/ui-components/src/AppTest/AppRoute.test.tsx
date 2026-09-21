@@ -27,6 +27,21 @@ vi.mock('../pages/Security/AddUser', () => ({
 vi.mock('../pages/Security/ChangePassword', () => ({
   default: () => <div data-testid="change-password-page">change-password-page</div>,
 }));
+vi.mock('../pages/Security/SetupAdmin', () => ({
+  default: () => <div data-testid="setup-admin-page">setup-admin-page</div>,
+}));
+vi.mock('../pages/Security/TwoFactorAuth', () => ({
+  default: () => <div data-testid="two-factor-page">two-factor-page</div>,
+}));
+vi.mock('../pages/Stage/StageList', () => ({
+  default: () => <div data-testid="stage-list-page">stage-list-page</div>,
+}));
+vi.mock('../pages/Stage/StageDetail', () => ({
+  default: () => <div data-testid="stage-detail-page">stage-detail-page</div>,
+}));
+vi.mock('../pages/Admin/Admin', () => ({
+  default: () => <div data-testid="admin-page">admin-page</div>,
+}));
 
 // Make loadable resolve synchronously
 vi.mock('../utils/loadable', () => ({

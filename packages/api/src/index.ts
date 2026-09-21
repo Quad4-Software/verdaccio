@@ -92,6 +92,13 @@ export default function (config: Config, auth: Auth, storage: Storage, logger: L
   });
   const otpForWrites = requireOtp({ tfaStore, scope: 'write', logger });
   const otpForPackagePublish = requirePackagePublishOtp(storage, tfaStore, logger);
+  // the web-login session endpoint reads the name from a different field
+  const otpForCliLogin = requireOtp({
+    tfaStore,
+    scope: 'auth',
+    logger,
+    getUsername: (req) => (typeof req.body?.username === 'string' ? req.body.username : undefined),
+  });
 
   app.use(enforceGeneratedTokenMetadata(storage, logger));
   app.use(antiLoop(config));
@@ -103,13 +110,13 @@ export default function (config: Config, auth: Auth, storage: Storage, logger: L
   profile(app, auth, config, storage, logger, otpForAuth);
   search(app, logger);
   user(app, auth, config, logger, otpForLogin);
-  distTags(app, auth, storage, logger, otpForWrites);
+  distTags(app, auth, storage, logger, otpForWrites, otpForPackagePublish);
   publish(app, auth, storage, config, logger, otpForWrites, otpForPackagePublish);
   ping(app);
   v1Search(app, auth, storage, config, logger);
   token(app, auth, storage, config, logger, otpForAuth);
   registry(app, auth, config, storage, logger);
-  access(app, auth, config, storage, logger);
+  access(app, auth, config, storage, logger, otpForWrites, otpForPackagePublish);
   // must stay before pkg(): its '/:package{/:version}' route would otherwise
   // swallow GET /-/stage
   if (config.flags?.stage) {
@@ -117,7 +124,7 @@ export default function (config: Config, auth: Auth, storage: Storage, logger: L
   }
   pkg(app, auth, storage, logger);
   if (config.flags?.webLogin) {
-    login(app, auth, storage, config, logger);
+    login(app, auth, storage, config, logger, otpForCliLogin);
   }
   return app;
 }

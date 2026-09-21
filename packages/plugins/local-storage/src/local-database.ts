@@ -5,7 +5,7 @@ import { JSONFile } from 'lowdb/node';
 import path from 'node:path';
 
 import type { searchUtils } from '@verdaccio/core';
-import { authUtils, errorUtils, fileUtils, pluginUtils } from '@verdaccio/core';
+import { authUtils, errorUtils, fileUtils, pluginUtils, validationUtils } from '@verdaccio/core';
 import type { Config, Logger, Token, TokenFilter } from '@verdaccio/types';
 
 import { searchOnStorage } from './dir-utils';
@@ -45,7 +45,9 @@ class LocalDatabase extends pluginUtils.Plugin<{}> implements Storage {
     super(config, { config, logger });
     this.tokenDb = null;
     this.statsDb = null;
-    this.pendingDownloads = {};
+    // null-prototype: package names like "constructor" are legal npm names and
+    // must not resolve through Object.prototype
+    this.pendingDownloads = Object.create(null);
     this.statsFlushTimer = null;
     this.config = config;
     this.logger = logger;
@@ -388,10 +390,16 @@ class LocalDatabase extends pluginUtils.Plugin<{}> implements Storage {
       } else {
         adapter = new JSONFile<StatsDatabase>(_dbGenPath(STATS_DB_NAME, this.config));
       }
-      this.statsDb = new Low<StatsDatabase>(adapter, { packages: {} });
-      await this.statsDb.read();
-      if (!this.statsDb.data?.packages) {
-        this.statsDb.data = { packages: {} };
+      this.statsDb = new Low<StatsDatabase>(adapter, { packages: Object.create(null) });
+      try {
+        await this.statsDb.read();
+      } catch (err: any) {
+        // a corrupt stats file must not take the download endpoints down;
+        // counters are disposable, restart from empty
+        this.logger.warn({ err }, 'download stats file is unreadable, resetting: @{err.message}');
+      }
+      if (validationUtils.isObject(this.statsDb.data?.packages) === false) {
+        this.statsDb.data = { packages: Object.create(null) };
       }
     }
     return this.statsDb;
@@ -422,19 +430,22 @@ class LocalDatabase extends pluginUtils.Plugin<{}> implements Storage {
     }
     const db = await this.getStatsDb();
     for (const [name, days] of Object.entries(this.pendingDownloads)) {
-      const counters = (db.data.packages[name] ??= {});
+      // hasOwn guards legal-but-dangerous names like "constructor"
+      const counters = Object.hasOwn(db.data.packages, name)
+        ? db.data.packages[name]
+        : (db.data.packages[name] = Object.create(null));
       for (const [day, count] of Object.entries(days)) {
         counters[day] = (counters[day] ?? 0) + count;
       }
     }
-    this.pendingDownloads = {};
+    this.pendingDownloads = Object.create(null);
     await db.write();
   }
 
   public async getPackageDownloads(packageName: string): Promise<Record<string, number>> {
     await this.flushDownloads();
     const db = await this.getStatsDb();
-    return { ...db.data.packages[packageName] };
+    return Object.hasOwn(db.data.packages, packageName) ? { ...db.data.packages[packageName] } : {};
   }
 
   public async getAllPackageDownloads(): Promise<Record<string, Record<string, number>>> {
@@ -445,6 +456,21 @@ class LocalDatabase extends pluginUtils.Plugin<{}> implements Storage {
       copy[name] = { ...days };
     }
     return copy;
+  }
+
+  /**
+   * Drop the download counters of a package that no longer exists so the
+   * stats file does not grow with dead entries or leak names post-unpublish.
+   */
+  public async deletePackageStats(packageName: string): Promise<void> {
+    if (Object.hasOwn(this.pendingDownloads, packageName)) {
+      delete this.pendingDownloads[packageName];
+    }
+    const db = await this.getStatsDb();
+    if (Object.hasOwn(db.data.packages, packageName)) {
+      delete db.data.packages[packageName];
+      await db.write();
+    }
   }
 }
 

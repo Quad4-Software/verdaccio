@@ -20,6 +20,8 @@ export const passwordSchema = yup
 export const loginSchema = yup.object({
   username: usernameSchema,
   password: passwordSchema,
+  // only sent when the server challenged for two-factor
+  otp: yup.string(),
 });
 
 export type LoginFormValues = yup.InferType<typeof loginSchema>;

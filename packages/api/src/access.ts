@@ -1,13 +1,13 @@
 import buildDebug from 'debug';
-import type { Router } from 'express';
+import type { RequestHandler, Router } from 'express';
 
 import type { Auth } from '@verdaccio/auth';
-import { API_ERROR, HTTP_STATUS, errorUtils, reqUtils } from '@verdaccio/core';
+import { API_ERROR, HTTP_STATUS, authUtils, errorUtils, reqUtils } from '@verdaccio/core';
 import { REGISTRY_API_ENDPOINTS, getRequestOptions } from '@verdaccio/middleware';
 import { Storage, assertPackageVisibility } from '@verdaccio/store';
 import type { Config, Logger } from '@verdaccio/types';
 
-import { allowWithCollaborators } from './collaborator-access';
+import { allowWithCollaborators, assertPackageAccess } from './collaborator-access';
 import type { $NextFunctionVer, $RequestExtend, $ResponseExtend } from '../types/custom';
 
 const debug = buildDebug('verdaccio:api:access');
@@ -24,7 +24,11 @@ export default function (
   auth: Auth,
   config: Config,
   storage: Storage,
-  logger: Logger
+  logger: Logger,
+  /** No-op unless the caller has two-factor enabled for write operations. */
+  requireOtp: RequestHandler = (_req, _res, next) => next(),
+  /** No-op unless the target package sets `publish_requires_tfa`. */
+  requirePackageOtp: RequestHandler = (_req, _res, next) => next()
 ): void {
   const can = allowWithCollaborators(auth, storage, logger);
   const username = (req: $RequestExtend): string | undefined => req.remote_user?.name;
@@ -50,6 +54,8 @@ export default function (
   route.put(
     REGISTRY_API_ENDPOINTS.collaborator,
     can('publish'),
+    requireOtp,
+    requirePackageOtp,
     async function (
       req: $RequestExtend,
       _res: $ResponseExtend,
@@ -78,6 +84,8 @@ export default function (
   route.delete(
     REGISTRY_API_ENDPOINTS.collaborator,
     can('publish'),
+    requireOtp,
+    requirePackageOtp,
     async function (
       req: $RequestExtend,
       _res: $ResponseExtend,
@@ -120,10 +128,13 @@ export default function (
     }
   );
 
-  // npm access public|restricted and npm access set mfa=... share this route
+  // npm access public|restricted and npm access set mfa=... share this route;
+  // package TFA applies so the flag cannot be cleared without a code
   route.post(
     REGISTRY_API_ENDPOINTS.package_access,
     can('publish'),
+    requireOtp,
+    requirePackageOtp,
     async function (
       req: $RequestExtend,
       _res: $ResponseExtend,
@@ -171,10 +182,21 @@ export default function (
         // listing another user's packages leaks what they own; limit it to
         // the caller themselves or an admin-scoped caller
         const actor = username(req);
-        if (actor !== user && config.security?.admins?.includes(actor ?? '') !== true) {
+        if (
+          actor !== user &&
+          authUtils.isAdmin(req.remote_user, config.security?.admins) === false
+        ) {
           throw errorUtils.getForbidden();
         }
-        next(await storage.listEntityPackages({ user }));
+        const result = await storage.listEntityPackages({ user });
+        // a scoped token must not enumerate packages outside its scope
+        const scoped = Object.fromEntries(
+          Object.entries(result).filter(
+            ([name]) =>
+              authUtils.matchPackagePatterns(name, req.remote_user?.token?.packages) !== false
+          )
+        );
+        next(scoped);
       } catch (err: any) {
         next(err);
       }
@@ -194,10 +216,12 @@ export default function (
           throw errorUtils.getBadRequest(API_ERROR.UNSUPORTED_REGISTRY_CALL);
         }
         const packages = await storage.listEntityPackages({ scope });
-        // private packages must not be enumerated by callers that cannot see them
+        // the access rules and the private flag both gate enumeration —
+        // otherwise the route leaks which scoped names exist
         const visible: Record<string, 'read' | 'write'> = {};
         for (const [name, permission] of Object.entries(packages)) {
           try {
+            await assertPackageAccess(auth, storage, name, req.remote_user);
             await assertPackageVisibility(auth, storage, name, req.remote_user);
             visible[name] = permission;
           } catch {

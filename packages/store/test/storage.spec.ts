@@ -429,6 +429,8 @@ describe('storage', () => {
           host: 'localhost',
           protocol: 'http',
           headers: {},
+          // removing a version is owner-level; 'test' is the fixture maintainer
+          username: 'test',
         };
         const config = new Config(
           configExample(

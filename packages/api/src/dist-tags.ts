@@ -16,7 +16,9 @@ export default function (
   storage: Storage,
   logger: Logger,
   /** No-op unless the caller has two-factor enabled for this operation. */
-  requireOtp: RequestHandler = (_req, _res, next) => next()
+  requireOtp: RequestHandler = (_req, _res, next) => next(),
+  /** No-op unless the target package sets `publish_requires_tfa`. */
+  requirePackageOtp: RequestHandler = (_req, _res, next) => next()
 ): void {
   const can = allowWithCollaborators(auth, storage, logger);
   const addTagPackageVersionMiddleware = async function (
@@ -29,6 +31,9 @@ export default function (
     }
     const packageName = reqUtils.paramToString(req.params.package);
     const tag = reqUtils.paramToString(req.params.tag);
+    if (['__proto__', 'constructor', 'prototype'].includes(tag)) {
+      return next(errorUtils.getBadRequest('invalid tag name'));
+    }
     const tags = {};
     tags[tag] = req.body;
     try {
@@ -47,6 +52,7 @@ export default function (
     DIST_TAGS_API_ENDPOINTS.tagging,
     can('publish'),
     requireOtp,
+    requirePackageOtp,
     media(HEADERS.JSON),
     addTagPackageVersionMiddleware
   );
@@ -55,6 +61,7 @@ export default function (
     DIST_TAGS_API_ENDPOINTS.tagging_package,
     can('publish'),
     requireOtp,
+    requirePackageOtp,
     media(HEADERS.JSON),
     addTagPackageVersionMiddleware
   );
@@ -63,6 +70,7 @@ export default function (
     DIST_TAGS_API_ENDPOINTS.tagging_package,
     can('publish'),
     requireOtp,
+    requirePackageOtp,
     async function (
       req: $RequestExtend,
       res: $ResponseExtend,
@@ -70,6 +78,9 @@ export default function (
     ): Promise<void> {
       const packageName = reqUtils.paramToString(req.params.package);
       const tag = reqUtils.paramToString(req.params.tag);
+      if (['__proto__', 'constructor', 'prototype'].includes(tag)) {
+        return next(errorUtils.getBadRequest('invalid tag name'));
+      }
       const tags = {};
       tags[tag] = null;
       try {

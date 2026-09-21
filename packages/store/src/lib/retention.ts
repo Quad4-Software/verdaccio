@@ -54,17 +54,23 @@ export function computePrunableVersions(
   const tagged = new Set<string>(Object.values(manifest[DIST_TAGS] ?? {}));
   const latest = manifest[DIST_TAGS]?.latest;
 
-  const ageOf = (version: string): number => {
+  // a missing or unparseable timestamp must never count as infinitely old —
+  // those versions are simply not prunable
+  const ageOf = (version: string): number | null => {
     const stamp = manifest.time?.[version];
-    const parsed = stamp ? Date.parse(stamp) : NaN;
-    return Number.isNaN(parsed) ? 0 : parsed;
+    const parsed = typeof stamp === 'string' ? Date.parse(stamp) : NaN;
+    return Number.isNaN(parsed) ? null : parsed;
   };
   // oldest first
-  const sorted = [...versions].sort((a, b) => ageOf(a) - ageOf(b));
+  const sorted = [...versions].sort((a, b) => (ageOf(a) ?? Infinity) - (ageOf(b) ?? Infinity));
   const newest = sorted[sorted.length - 1];
 
   const removable = sorted.filter(
-    (version) => version !== latest && version !== newest && (!keepTagged || !tagged.has(version))
+    (version) =>
+      version !== latest &&
+      version !== newest &&
+      ageOf(version) !== null &&
+      (!keepTagged || !tagged.has(version))
   );
 
   const now = Date.now();
@@ -72,7 +78,7 @@ export function computePrunableVersions(
     cfg.max_age_days && cfg.max_age_days > 0
       ? new Set(
           removable.filter(
-            (version) => now - ageOf(version) > cfg.max_age_days! * 24 * 60 * 60 * 1000
+            (version) => now - ageOf(version)! > cfg.max_age_days! * 24 * 60 * 60 * 1000
           )
         )
       : new Set<string>();
