@@ -28,7 +28,7 @@ export const MobileNavBar = styled('div')<{ theme?: Theme }>((props) => ({
 export const InnerMobileNavBar = styled('div')<{ theme?: Theme }>((props) => ({
   borderRadius: '4px',
   backgroundColor: props.theme.palette.greyLight,
-  color: common.white,
+  color: props.theme.palette.mode === 'light' ? props.theme.palette.primary.main : common.white,
   width: '100%',
   padding: '0 5px',
   margin: '0 10px 0 0',

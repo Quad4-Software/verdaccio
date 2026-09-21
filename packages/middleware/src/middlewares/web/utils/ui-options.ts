@@ -54,7 +54,7 @@ export function getUIOptions(
     ...config.experiments,
   };
   const primaryColor =
-    validatePrimaryColor(config?.web?.primary_color ?? config?.web?.primaryColor) ?? '#4b5e40';
+    validatePrimaryColor(config?.web?.primary_color ?? config?.web?.primaryColor) ?? '#0A0A0B';
   const {
     showInfo,
     showSettings,

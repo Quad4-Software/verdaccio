@@ -1,1 +1,11 @@
-<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><filter x="-19.8%" y="-11.7%" width="139.6%" height="140.4%" filterUnits="objectBoundingBox" id="a"><feOffset dy="4" in="SourceAlpha" result="shadowOffsetOuter1"/><feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"/><feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.0906646286 0" in="shadowBlurOuter1"/></filter><filter x="-33.9%" y="-50%" width="167.9%" height="272.7%" filterUnits="objectBoundingBox" id="c"><feOffset dy="4" in="SourceAlpha" result="shadowOffsetOuter1"/><feGaussianBlur stdDeviation="2.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.0906646286 0" in="shadowBlurOuter1"/></filter><path id="b" d="M48 16.729L32.672 47h-8.874L0 0h15.328l12.907 25.492 4.437-8.763H48z"/><path d="M35.2 11H28V8.643h8.4l1.2-2.357H32V3.929h6.8l.8-1.572H36V0h20l-5.6 11H35.2z" id="d"/></defs><g fill="none" fill-rule="evenodd"><rect fill="#000" width="100" height="100" rx="37"/><g transform="translate(22 30)"><use fill="#000" filter="url(#a)" xlink:href="#b"/><use fill-opacity=".6" fill="#FFF" xlink:href="#b"/></g><g transform="translate(22 30)"><use fill="#000" filter="url(#c)" xlink:href="#d"/><use fill="#FFF" xlink:href="#d"/></g><path fill="#FFF" d="M54.785 77H45.88L22 30h15.38L58 70.718z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Quad4">
+  <rect width="64" height="64" rx="14" fill="#0a0a0b"/>
+  <g transform="translate(32 32) scale(24)" fill="#fafafa" fill-rule="nonzero">
+    <path d="M 0.10097 -0.97999 L 0.09859 -0.69728 L 0.39556 -0.52385 L 0.09859 -0.35517 L 0.09859 -0.11522 L 0.83983 -0.54286 Z"/>
+    <path d="M -0.09859 -0.97762 L -0.83745 -0.54523 L -0.10097 -0.11760 L -0.09622 -0.35517 L -0.39081 -0.52385 L -0.09622 -0.69728 Z"/>
+    <path d="M -0.86121 -0.49059 L -0.86121 0.36943 L -0.62363 0.23163 L -0.62126 -0.10810 L -0.32666 0.06533 L -0.11285 -0.05821 Z"/>
+    <path d="M 0.86121 -0.49059 L 0.11998 -0.05821 L 0.33142 0.06533 L 0.62363 -0.10572 L 0.62601 0.23163 L 0.86121 0.36705 Z"/>
+    <path d="M 0.07008 0.19362 L 0.07008 0.98237 L 0.79231 0.54761 L 0.56424 0.41219 L 0.26252 0.59750 L 0.26014 0.30291 Z"/>
+    <path d="M -0.07008 0.19600 L -0.25777 0.30291 L -0.26014 0.59750 L -0.56186 0.41219 L -0.78993 0.54761 L -0.07008 0.97999 Z"/>
+  </g>
+</svg>

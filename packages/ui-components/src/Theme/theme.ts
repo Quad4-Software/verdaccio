@@ -42,13 +42,7 @@ export const getTheme = (mode: ThemeMode, primaryColor?: string): Theme => {
     palette: getModePalette(mode, primaryColor),
 
     typography: {
-      fontFamily: [
-        '-apple-system',
-        'BlinkMacSystemFont',
-        '"Helvetica Neue"',
-        'Arial',
-        'sans-serif',
-      ].join(','),
+      fontFamily: ['ui-sans-serif', 'system-ui', 'sans-serif'].join(','),
     },
 
     components: {

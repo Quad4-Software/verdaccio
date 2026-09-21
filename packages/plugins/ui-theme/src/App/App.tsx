@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
-import * as FlagsIcon from 'country-flag-icons/react/3x2';
 import React, { StrictMode, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
@@ -20,7 +19,6 @@ import {
 } from '@verdaccio/ui-components';
 
 import Contributors from '../components/Contributors';
-import Support from '../components/Support';
 import about from '../components/about.md';
 import license from '../components/license.md';
 import i18n from '../i18n/config';
@@ -41,10 +39,6 @@ const StyledBoxContent = styled(Box)({
   },
 });
 
-const Flags = styled('span')(() => ({
-  width: '25px',
-}));
-
 function CustomInfoDialog({ onCloseDialog, title, isOpen }) {
   const { t } = useTranslation();
   return (
@@ -62,22 +56,8 @@ function CustomInfoDialog({ onCloseDialog, title, isOpen }) {
           ),
         },
         { element: <ReactMarkdown>{license}</ReactMarkdown> },
-        { element: <Support /> },
       ]}
-      tabs={[
-        { label: t('about') },
-        { label: t('dialog.license') },
-        {
-          label: '',
-          // icon-only tab: without an aria-label it has no accessible name
-          'aria-label': t('dialog.support'),
-          icon: (
-            <Flags>
-              <FlagsIcon.UA />
-            </Flags>
-          ),
-        },
-      ]}
+      tabs={[{ label: t('about') }, { label: t('dialog.license') }]}
     />
   );
 }
@@ -90,6 +70,7 @@ const AppContent: React.FC = () => {
     Route.SUCCESS,
     Route.ADD_USER,
     Route.CHANGE_PASSWORD,
+    Route.SETUP,
   ].includes(location.pathname as Route);
 
   return (

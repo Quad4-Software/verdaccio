@@ -4,13 +4,9 @@ import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 import type { Theme } from '../../';
-import { Logo, useConfig } from '../../';
+import { useConfig } from '../../';
 import { Earth } from '../../components/Icons';
-import { Inner, Left, Love, Right, Wrapper } from './styles';
-
-function goToVerdaccioWebsite(): void {
-  window.open('https://verdaccio.org', '_blank');
-}
+import { Inner, Left, Love, Wrapper } from './styles';
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -56,19 +52,9 @@ const Footer = () => {
             </Flags>
           </ToolTip>
         </Left>
-        <Right>
-          {configOptions?.version && (
-            <>
-              <PoweredBy data-testid="version-footer">{t('footer.powered-by')}</PoweredBy>
-              <Logo
-                isDefault={true}
-                onClick={goToVerdaccioWebsite}
-                size="x-small"
-                title={configOptions.version}
-              />
-            </>
-          )}
-        </Right>
+        {configOptions?.version ? (
+          <Version data-testid="version-footer">{configOptions.version}</Version>
+        ) : null}
       </Inner>
     </Wrapper>
   );
@@ -76,8 +62,9 @@ const Footer = () => {
 
 export default Footer;
 
-const PoweredBy = styled('span')(() => ({
-  paddingRight: '5px',
+const Version = styled('span')<{ theme?: Theme }>(({ theme }) => ({
+  color: theme.palette.mode === 'dark' ? theme.palette.secondary.main : theme.palette.nobel01,
+  fontSize: theme.fontSize.sm,
 }));
 
 const StyledEarth = styled(Earth)<{ theme?: Theme }>(({ theme }) => ({

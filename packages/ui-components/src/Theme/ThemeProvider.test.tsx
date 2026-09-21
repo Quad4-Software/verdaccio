@@ -19,18 +19,18 @@ const ThemeInspector: React.FC = () => {
 
 describe('ThemeProvider', () => {
   test('should render with default light theme', () => {
-    renderWith(<ThemeInspector />);
+    renderWith(<ThemeInspector />, { primaryColor: PRIMARY_COLOR });
     expect(screen.getByTestId('mode').textContent).toBe('light');
     expect(screen.getByTestId('primary').textContent).toBe(PRIMARY_COLOR);
-    expect(screen.getByTestId('bg-default').textContent).toBe('#f4f4f4');
+    expect(screen.getByTestId('bg-default').textContent).toBe('#FAFAFA');
     expect(screen.getByTestId('bg-paper').textContent).toBe('#ffffff');
   });
 
   test('should render with dark mode', () => {
     renderWith(<ThemeInspector />, { darkMode: true });
     expect(screen.getByTestId('mode').textContent).toBe('dark');
-    expect(screen.getByTestId('bg-default').textContent).toBe('#1a202c');
-    expect(screen.getByTestId('bg-paper').textContent).toBe('#2d3748');
+    expect(screen.getByTestId('bg-default').textContent).toBe('#0A0A0B');
+    expect(screen.getByTestId('bg-paper').textContent).toBe('#16161A');
   });
 
   test('should apply custom primary color', () => {

@@ -1,13 +1,13 @@
 import { common } from '@mui/material/colors';
 import type { PaletteOptions } from '@mui/material/styles';
 
-import { baseColors } from './colors';
+import { PRIMARY_COLOR, baseColors } from './colors';
 
 export type ThemeMode = 'light' | 'dark';
 
 export const customPaletteColors = {
   black: '#000',
-  cyanBlue: '#253341',
+  cyanBlue: '#16161A',
   greyLight: '#d3d3d3',
   greyLight2: '#908ba1',
   greyDark2: '#586069',
@@ -18,31 +18,43 @@ export const customPaletteColors = {
   nobel01: '#999999',
 } as const;
 
-const DARK_MODE_PRIMARY = common.white;
+const DARK_PRIMARY = '#FAFAFA';
+const LIGHT_PRIMARY = PRIMARY_COLOR;
+
+function isNearWhite(color: string): boolean {
+  const hex = color.trim().toLowerCase();
+  return (
+    hex === '#fff' ||
+    hex === '#ffffff' ||
+    hex === '#fafafa' ||
+    hex === 'white' ||
+    hex === common.white.toLowerCase()
+  );
+}
 
 export const getModePalette = (mode: ThemeMode, primaryColor?: string): PaletteOptions => {
-  const basePrimary = primaryColor || baseColors.primary.main;
-  const primary = mode === 'dark' ? { main: DARK_MODE_PRIMARY } : { main: basePrimary };
-
   if (mode === 'dark') {
     return {
       mode,
-      primary,
-      secondary: { main: '#424242' },
+      primary: { main: DARK_PRIMARY },
+      secondary: { main: '#A1A1AA' },
       background: {
-        default: '#1a202c',
-        paper: '#2d3748',
+        default: '#0A0A0B',
+        paper: '#16161A',
       },
       ...customPaletteColors,
     };
   }
 
+  const configured = primaryColor || baseColors.primary.main;
+  const primaryMain = isNearWhite(configured) ? LIGHT_PRIMARY : configured;
+
   return {
     mode,
-    primary,
-    secondary: baseColors.secondary,
+    primary: { main: primaryMain },
+    secondary: { main: '#52525B' },
     background: {
-      default: '#f4f4f4',
+      default: '#FAFAFA',
       paper: '#ffffff',
     },
     ...customPaletteColors,

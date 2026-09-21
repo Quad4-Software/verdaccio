@@ -1,13 +1,13 @@
 import { grey } from '@mui/material/colors';
 
-export const PRIMARY_COLOR = '#4b5e40';
+export const PRIMARY_COLOR = '#0A0A0B';
 
 export const baseColors = {
   primary: {
     main: PRIMARY_COLOR,
   },
   secondary: {
-    main: '#20232a',
+    main: '#52525B',
   },
 } as const;
 
