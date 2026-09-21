@@ -111,6 +111,8 @@ export const HTTP_STATUS = {
   SERVICE_UNAVAILABLE: httpCodes.SERVICE_UNAVAILABLE,
   /** 504: The server, while acting as a gateway or proxy, did not get a response in time from the upstream server. */
   GATEWAY_TIMEOUT: httpCodes.GATEWAY_TIMEOUT,
+  /** 507: The server is unable to store the representation needed to complete the request. */
+  INSUFFICIENT_STORAGE: httpCodes.INSUFFICIENT_STORAGE,
   /** 508: The server detected an infinite loop while processing the request. */
   LOOP_DETECTED: 508,
   /** 590: Custom Verdaccio code indicating the server cannot handle the request. */

@@ -1,6 +1,6 @@
 import type { Auth } from '@verdaccio/auth';
+import { HTTP_STATUS, authUtils, errorUtils } from '@verdaccio/core';
 import type { searchUtils } from '@verdaccio/core';
-import { HTTP_STATUS, errorUtils } from '@verdaccio/core';
 import { SEARCH_API_ENDPOINTS, rateLimit } from '@verdaccio/middleware';
 import { type Storage, canPublish } from '@verdaccio/store';
 import type { Config, Logger } from '@verdaccio/types';
@@ -56,7 +56,20 @@ export default function (
               reject(err);
             }
           } else if (!allowed) {
-            return resolve(null);
+            // the auth rules deny access; a collaborator grant on the package
+            // still lets the user see it, same as the package GET route —
+            // but never widen a generated token's package scope
+            const name = pkg?.package?.name;
+            if (
+              typeof name !== 'string' ||
+              authUtils.matchPackagePatterns(name, remoteUser?.token?.packages) === false
+            ) {
+              return resolve(null);
+            }
+            const permission = await storage
+              .getCollaboratorPermission(name, remoteUser?.name)
+              .catch(() => null);
+            return resolve(permission !== null ? pkg : null);
           } else if (pkg?.visibility === 'private') {
             // a private package is only listed for users allowed to publish it
             return resolve((await canPublish(auth, pkg.package.name, remoteUser)) ? pkg : null);

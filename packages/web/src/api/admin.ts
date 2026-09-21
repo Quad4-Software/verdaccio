@@ -6,7 +6,7 @@ import { TfaStore } from '@verdaccio/auth';
 import { HTTP_STATUS, authUtils, errorUtils, reqUtils, validationUtils } from '@verdaccio/core';
 import type { VerdaccioError } from '@verdaccio/core';
 import type { $NextFunctionVer, $RequestExtend, $ResponseExtend } from '@verdaccio/middleware';
-import { WebUrls, getRequestMetrics } from '@verdaccio/middleware';
+import { WebUrls, getRegistryMetrics, getRequestMetrics } from '@verdaccio/middleware';
 import type { Storage } from '@verdaccio/store';
 import type { Config, RemoteUser } from '@verdaccio/types';
 
@@ -333,7 +333,25 @@ function addAdminApi(storage: Storage, auth: Auth, config: Config): Router {
             total: getRequestMetrics().total,
             byStatus: getRequestMetrics().byStatus,
           },
+          registry: getRegistryMetrics(),
         });
+      } catch (err) {
+        next(err);
+      }
+    }
+  );
+
+  // trigger a retention sweep on demand; the periodic run needs no endpoint
+  route.post(
+    WebUrls.admin_retention,
+    async (req: $RequestExtend, _res: $ResponseExtend, next: $NextFunctionVer) => {
+      try {
+        const report = await storage.runRetentionSweep();
+        if (report === null) {
+          return next(errorUtils.getCode(HTTP_STATUS.NOT_IMPLEMENTED, 'retention is not enabled'));
+        }
+        recordAdminAction(req.remote_user?.name, 'retention.sweep', '', `${report.removed.length}`);
+        next(report);
       } catch (err) {
         next(err);
       }

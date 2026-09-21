@@ -59,11 +59,11 @@ describe('search', () => {
             },
             score: {
               detail: {
-                maintenance: 0,
-                popularity: 1,
-                quality: 1,
+                maintenance: 1,
+                popularity: 0,
+                quality: 0.6,
               },
-              final: 1,
+              final: 0.7,
             },
             searchScore: 1,
             verdaccioPkgCached: false,
@@ -121,11 +121,11 @@ describe('search', () => {
             },
             score: {
               detail: {
-                maintenance: 0,
-                popularity: 1,
-                quality: 1,
+                maintenance: 1,
+                popularity: 0,
+                quality: 0.6,
               },
-              final: 1,
+              final: 0.7,
             },
             searchScore: 1,
             verdaccioPkgCached: false,

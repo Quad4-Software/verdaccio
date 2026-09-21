@@ -13,6 +13,8 @@ export { enforceGeneratedTokenMetadata } from './middlewares/token-auth';
 export type { TokenReadableStorage } from './middlewares/token-auth';
 export { rateLimit } from './middlewares/rate-limit';
 export { requestMetrics, getRequestMetrics } from './middlewares/request-metrics';
+export { recordRegistryEvent, getRegistryMetrics } from './middlewares/registry-metrics';
+export type { RegistryEventMetrics } from './middlewares/registry-metrics';
 export type { RequestMetrics } from './middlewares/request-metrics';
 export { registerBodyParser } from './middlewares/body-parser';
 export { userAgent } from './middlewares/user-agent';

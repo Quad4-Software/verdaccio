@@ -163,6 +163,8 @@ export type CommonWebConf = {
   showSettings?: boolean;
   showSearch?: boolean;
   showFooter?: boolean;
+  /** Show the registry version in the UI footer. Default true. */
+  showVersion?: boolean;
   showThemeSwitch?: boolean;
   showDownloadTarball?: boolean;
   showUplinks?: boolean;
@@ -275,6 +277,88 @@ export interface Security {
   admins?: string[];
   /** npm-style OIDC trusted publishing entries. */
   trustedPublishing?: TrustedPublisher[];
+  /**
+   * npm-style ECDSA registry signatures (`npm audit signatures`). When enabled
+   * the registry generates a P-256 keypair stored in the storage directory,
+   * signs `${name}@${version}:${dist.integrity}` on every publish, exposes the
+   * public key at `/-/npm/v1/keys` and adds `dist.signatures` to packuments.
+   */
+  signatures?: { enabled?: boolean };
+}
+
+/**
+ * Publish-time package scanning policy. Runs on every publish against the
+ * uploaded tarball and manifest; results are stored on the version as `scan`.
+ */
+export interface ScanConfig {
+  /** Master switch; when false no checks run. Default false. */
+  enabled?: boolean;
+  /**
+   * When true, findings at or above the configured actions reject the publish
+   * with an error instead of only annotating the version. Default false.
+   */
+  enforce?: boolean;
+  licenses?: {
+    /** SPDX ids that are always rejected. */
+    deny?: string[];
+    /** When non-empty, only these SPDX ids are accepted. */
+    allow?: string[];
+    /** When true, a missing license field is a finding. */
+    required?: boolean;
+  };
+  /**
+   * Policy for lifecycle scripts (`preinstall`/`install`/`postinstall`).
+   * `deny` is a finding, `warn` annotates only, `allow` skips the check.
+   */
+  install_scripts?: 'allow' | 'warn' | 'deny';
+  /**
+   * Policy for native/binary payloads inside the tarball (`.node`, `.so`,
+   * `.dll`, `.exe`, `.dylib`, `binding.gyp`). Same semantics as
+   * `install_scripts`.
+   */
+  native_code?: 'allow' | 'warn' | 'deny';
+  /**
+   * Optional OSV lookup of the published name+version against osv.dev.
+   * Disabled by default; runs best-effort with a short timeout and never
+   * blocks on lookup failures.
+   */
+  osv?: { enabled?: boolean; url?: string; timeout_ms?: number };
+}
+
+/**
+ * Retention and quota policy for locally published packages. The sweep runs
+ * on an interval and only ever touches local packages, never uplink cache.
+ */
+export interface RetentionConfig {
+  /** Master switch. Default false. */
+  enabled?: boolean;
+  /** Sweep cadence in minutes. Default 1440 (daily). */
+  interval_minutes?: number;
+  /** Keep at most N versions per package (dist-tag targets never count). */
+  max_versions?: number;
+  /** Remove versions published more than N days ago. */
+  max_age_days?: number;
+  /** Never remove a version that is the target of a dist-tag. Default true. */
+  keep_tagged?: boolean;
+  /** Report what would be removed without deleting anything. Default false. */
+  dry_run?: boolean;
+  /** Packages exempt from pruning: `*`, exact names, or `@scope/*` prefixes. */
+  exclude?: string[];
+  /**
+   * Reject publishes once the storage directory exceeds this size in MiB.
+   * `0` or absent disables the quota.
+   */
+  max_storage_mb?: number;
+}
+
+/**
+ * Prometheus-style metrics endpoint (`GET /-/metrics`).
+ */
+export interface MetricsConfig {
+  /** Default false: the endpoint answers 404 unless explicitly enabled. */
+  enabled?: boolean;
+  /** When set, scrapes must send `Authorization: Bearer <token>`. */
+  token?: string;
 }
 
 export type ReadmeOptions = 'latest' | 'tagged' | 'all';
@@ -395,6 +479,9 @@ export interface ConfigYaml {
   // @deprecated use flags instead
   experiments?: FlagsConfig;
   userRateLimit?: RateLimit;
+  metrics?: MetricsConfig;
+  retention?: RetentionConfig;
+  scan?: ScanConfig;
   // internal objects, added by internal yaml to JS config parser
   // save the configuration file path
   configPath?: string;

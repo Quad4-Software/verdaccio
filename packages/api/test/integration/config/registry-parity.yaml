@@ -1,0 +1,35 @@
+auth:
+  htpasswd:
+    file: ./htpasswd-registry-parity
+web:
+  enable: true
+  title: verdaccio
+
+security:
+  signatures:
+    enabled: true
+
+metrics:
+  enabled: true
+  token: metrics-secret
+
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+
+log: { type: stdout, format: pretty, level: info }
+
+packages:
+  '@*/*':
+    access: $all
+    publish: $authenticated
+    unpublish: $authenticated
+    proxy: npmjs
+  '**':
+    access: $all
+    publish: $authenticated
+    unpublish: $authenticated
+    proxy: npmjs
+
+_debug: true
+storage: ./storage

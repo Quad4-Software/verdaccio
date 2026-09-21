@@ -3,19 +3,21 @@ import type { Router } from 'express';
 
 import type { Auth } from '@verdaccio/auth';
 import { HEADERS, HEADER_TYPE, reqUtils, stringUtils } from '@verdaccio/core';
-import { PACKAGE_API_ENDPOINTS, allow, getRequestOptions } from '@verdaccio/middleware';
+import {
+  PACKAGE_API_ENDPOINTS,
+  getRequestOptions,
+  recordRegistryEvent,
+} from '@verdaccio/middleware';
 import { Storage, assertPackageVisibility } from '@verdaccio/store';
 import type { Logger } from '@verdaccio/types';
 
+import { allowWithCollaborators } from './collaborator-access';
 import type { $NextFunctionVer, $RequestExtend, $ResponseExtend } from '../types/custom';
 
 const debug = buildDebug('verdaccio:api:package');
 
 export default function (route: Router, auth: Auth, storage: Storage, logger: Logger): void {
-  const can = allow(auth, {
-    beforeAll: (a, b) => logger.trace(a, b),
-    afterAll: (a, b) => logger.trace(a, b),
-  });
+  const can = allowWithCollaborators(auth, storage, logger);
   route.get(
     PACKAGE_API_ENDPOINTS.get_package_by_version,
     can('access'),
@@ -72,6 +74,8 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
           // TODO: review why this param
           // enableRemote: true,
         })) as any;
+        recordRegistryEvent('tarballDownloads');
+        void storage.recordDownload(pkgName);
 
         stream.on('content-length', (size) => {
           debug('tarball size %o', size);

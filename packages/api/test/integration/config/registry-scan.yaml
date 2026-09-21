@@ -1,0 +1,34 @@
+auth:
+  htpasswd:
+    file: ./htpasswd-registry-scan
+web:
+  enable: true
+  title: verdaccio
+
+scan:
+  enabled: true
+  enforce: true
+  install_scripts: deny
+  licenses:
+    deny: ['SSPL-1.0']
+
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+
+log: { type: stdout, format: pretty, level: info }
+
+packages:
+  '@*/*':
+    access: $all
+    publish: $authenticated
+    unpublish: $authenticated
+    proxy: npmjs
+  '**':
+    access: $all
+    publish: $authenticated
+    unpublish: $authenticated
+    proxy: npmjs
+
+_debug: true
+storage: ./storage

@@ -2,7 +2,7 @@ import buildDebug from 'debug';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 import type { TfaStore } from '@verdaccio/auth';
-import { HEADERS, HTTP_STATUS, errorUtils } from '@verdaccio/core';
+import { HEADERS, HTTP_STATUS, errorUtils, reqUtils } from '@verdaccio/core';
 import type { Logger } from '@verdaccio/types';
 
 import type { $RequestExtend } from '../types/custom';
@@ -128,6 +128,71 @@ export function requireOtp(options: RequireOtpOptions): RequestHandler {
     }
 
     logger.warn({ username }, 'rejected an invalid one-time password for @{username}');
+    return challenge(res, next);
+  };
+}
+
+/**
+ * Enforce the per-package `publish_requires_tfa` flag (`npm access set mfa`).
+ *
+ * When set, every publish for that package must carry a valid OTP from the
+ * publishing user, unless the credential is an automation token and the
+ * package allows automation tokens to bypass the challenge.
+ */
+export function requirePackagePublishOtp(
+  storage: any,
+  tfaStore: TfaStore | undefined,
+  logger: Logger
+): RequestHandler {
+  return async function (req: Request, res: Response, next: NextFunction): Promise<void> {
+    const name = reqUtils.paramToString((req as $RequestExtend).params?.package);
+    if (typeof name !== 'string' || name === '') {
+      return next();
+    }
+    let policy;
+    try {
+      policy = await storage.getPackagePublishPolicy(name);
+    } catch (err) {
+      return next(err);
+    }
+    if (!policy) {
+      return next();
+    }
+
+    const user = (req as $RequestExtend).remote_user;
+    if (typeof user?.name !== 'string' || user.name === '') {
+      // unauthenticated writes are rejected by the permission middleware anyway
+      return next();
+    }
+
+    const isAutomationToken =
+      user.token?.otpExempt === true || (user.token?.packages?.length ?? 0) > 0;
+    if (policy.automation_token_overrides_tfa && isAutomationToken) {
+      debug('automation token bypasses publish TFA for %o', name);
+      return next();
+    }
+
+    if (!tfaStore) {
+      logger.warn(
+        { name },
+        'package @{name} requires publish TFA but flags.tfa is off; blocking the write'
+      );
+      return next(
+        errorUtils.getForbidden(
+          'this package requires two-factor authentication, which is not enabled on this registry'
+        )
+      );
+    }
+
+    const otp = req.get(OTP_HEADER);
+    if (!otp) {
+      debug('challenging %o for a package-level OTP on %o', user.name, name);
+      return challenge(res, next);
+    }
+    if (await tfaStore.verify(user.name, otp)) {
+      return next();
+    }
+    logger.warn({ username: user.name }, 'rejected an invalid one-time password for @{username}');
     return challenge(res, next);
   };
 }

@@ -49,10 +49,19 @@ describe('validatePublishSingleVersion', () => {
       expect(validatePublishSingleVersion(manifest)).toBe(false);
     });
 
-    test('should invalidate a manifest when _attachments contains more than one entry', () => {
+    test('should validate a manifest with a tarball and a sigstore attestation attachment', () => {
       const manifest = {
         name: 'foo-pkg',
-        _attachments: { '1': {}, '2': {} },
+        _attachments: { 'foo-1.tgz': {}, 'foo-1.sigstore': {} },
+        versions: { '1': {} },
+      };
+      expect(validatePublishSingleVersion(manifest)).toBe(true);
+    });
+
+    test('should invalidate a manifest when _attachments contains more than two entries', () => {
+      const manifest = {
+        name: 'foo-pkg',
+        _attachments: { '1': {}, '2': {}, '3': {} },
         versions: { '1': {} },
       };
       expect(validatePublishSingleVersion(manifest)).toBe(false);

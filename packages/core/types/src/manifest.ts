@@ -72,6 +72,12 @@ export interface Signatures {
 export interface Dist {
   'npm-signature'?: string;
   signatures?: Signatures[];
+  /**
+   * npm provenance attestation pointers. The registry only advertises the URL
+   * of the attestation document; the Sigstore bundle itself is stored under
+   * `Manifest._attestations` and served from `/-/npm/v1/attestations`.
+   */
+  attestations?: { url: string; provenance?: { predicateType: string } }[];
   fileCount?: number;
   integrity?: string;
   shasum: string;
@@ -145,8 +151,32 @@ export interface Version {
   hasInstallScript?: boolean;
   cpu?: string[];
   os?: string[];
+  /** result of the publish-time scan, when `scan.enabled` is set */
+  scan?: PackageScanResult;
   // packument-level flag surfaced on list summaries
   visibility?: string;
+}
+
+export interface PackageScanFinding {
+  type: 'license' | 'install-script' | 'native-code' | 'osv' | 'quota' | 'policy';
+  severity: 'info' | 'warning' | 'critical';
+  message: string;
+}
+
+export interface PackageScanResult {
+  status: 'pass' | 'warn' | 'fail';
+  findings: PackageScanFinding[];
+  at: string;
+}
+
+/**
+ * A Sigstore attestation bundle as uploaded by `npm publish --provenance`.
+ * `predicateType` is extracted from the DSSE payload so the registry can
+ * advertise it in `dist.attestations` without parsing on every read.
+ */
+export interface RegistryAttestation {
+  predicateType: string;
+  bundle: Record<string, any>;
 }
 
 export interface Dependencies {
@@ -234,6 +264,27 @@ export interface Manifest extends FullRemoteManifest, PublishManifest {
    * private packages are only visible to users allowed to publish them
    */
   visibility?: 'private' | 'public';
+  /**
+   * Per-package collaborator grants (`npm access`-style). Maps a username to
+   * `read` or `write`; `write` also implies publish/unpublish. Internal field,
+   * stripped from packument responses (not part of the WHITELIST).
+   */
+  collaborators?: Record<string, 'read' | 'write'>;
+  /**
+   * `npm access set mfa=publish|automation`: when true, publishes and metadata
+   * writes to this package require a one-time password from TFA-enabled users.
+   */
+  publish_requires_tfa?: boolean;
+  /**
+   * Whether automation tokens may bypass `publish_requires_tfa` for this
+   * package (npm `mfa=automation`).
+   */
+  automation_token_overrides_tfa?: boolean;
+  /**
+   * Sigstore attestation bundles uploaded with `npm publish --provenance`,
+   * keyed by version. Internal field, stripped from packument responses.
+   */
+  _attestations?: Record<string, RegistryAttestation[]>;
 }
 
 export type AbbreviatedVersion = Pick<

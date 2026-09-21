@@ -6,14 +6,15 @@ import { API_MESSAGE, HEADERS, HTTP_STATUS, reqUtils, tarballUtils } from '@verd
 import { notify } from '@verdaccio/hooks';
 import {
   PUBLISH_API_ENDPOINTS,
-  allow,
   expectJson,
   getRequestOptions,
   media,
+  recordRegistryEvent,
 } from '@verdaccio/middleware';
 import type { Storage } from '@verdaccio/store';
 import type { Config, Logger, Manifest } from '@verdaccio/types';
 
+import { allowWithCollaborators } from './collaborator-access';
 import type { $NextFunctionVer, $RequestExtend, $ResponseExtend } from '../types/custom';
 
 const debug = buildDebug('verdaccio:api:publish');
@@ -102,16 +103,16 @@ export default function publish(
   config: Config,
   logger: Logger,
   /** No-op unless the caller has two-factor in `auth-and-writes` mode. */
-  requireOtp: RequestHandler = (_req, _res, next) => next()
+  requireOtp: RequestHandler = (_req, _res, next) => next(),
+  /** No-op unless the target package sets `publish_requires_tfa`. */
+  requirePackageOtp: RequestHandler = (_req, _res, next) => next()
 ): void {
-  const can = allow(auth, {
-    beforeAll: (a, b) => logger.trace(a, b),
-    afterAll: (a, b) => logger.trace(a, b),
-  });
+  const can = allowWithCollaborators(auth, storage, logger);
   router.put(
     PUBLISH_API_ENDPOINTS.add_package,
     can('publish'),
     requireOtp,
+    requirePackageOtp,
     media(HEADERS.JSON),
     expectJson,
     publishPackage(storage, config, logger, 'publish one version')
@@ -121,6 +122,7 @@ export default function publish(
     PUBLISH_API_ENDPOINTS.publish_package,
     can('unpublish'),
     requireOtp,
+    requirePackageOtp,
     media(HEADERS.JSON),
     expectJson,
     publishPackage(storage, config, logger, 'publish with revision')
@@ -157,6 +159,7 @@ export default function publish(
         await storage.removePackage(packageName, rev, username);
         debug('package %s unpublished', packageName);
         res.status(HTTP_STATUS.CREATED);
+        recordRegistryEvent('unpublishes');
 
         // send notification of package removal
         const metadata: Partial<Manifest> = { name: packageName, _rev: rev };
@@ -199,6 +202,7 @@ export default function publish(
       try {
         await storage.removeTarball(packageName, filename, revision, username);
         res.status(HTTP_STATUS.CREATED);
+        recordRegistryEvent('unpublishes');
 
         logger.debug(
           { packageName, filename, revision },
@@ -262,6 +266,11 @@ export function publishPackage(
       });
       debug('package %s published', packageName);
       res.status(HTTP_STATUS.CREATED);
+      // the same route also serves star/owner/unpublish updates; only a body
+      // carrying a tarball attachment is an actual publish
+      if (Object.keys(metadata._attachments ?? {}).length > 0) {
+        recordRegistryEvent('publishes');
+      }
 
       // send notification of publication (notification step, non transactional)
       // a publish body is a packument; the published version is the single entry

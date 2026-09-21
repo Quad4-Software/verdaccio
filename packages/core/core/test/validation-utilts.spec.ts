@@ -181,6 +181,14 @@ describe('validatePassword', () => {
     expect(validatePassword('12345', '.{3}$')).toBeTruthy();
   });
 
+  test('should strip JS-literal slashes from string regex (YAML footgun)', () => {
+    // '/.{12}$/' used to compile to a pattern with literal slashes that could
+    // never match, silently rejecting every password
+    expect(validatePassword('a-very-long-password', '/.{12}$/')).toBeTruthy();
+    expect(validatePassword('short', '/.{12}$/')).toBeFalsy();
+    expect(validatePassword('Aa1!xxxxx', '/^(?=.*[A-Z])(?=.*\\d).{8,}$/')).toBeTruthy();
+  });
+
   test('should fail when password does not match string regex', () => {
     expect(validatePassword('12', '.{3}$')).toBeFalsy();
   });

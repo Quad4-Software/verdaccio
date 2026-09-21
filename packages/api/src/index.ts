@@ -18,11 +18,13 @@ import type { Config, Logger } from '@verdaccio/types';
 
 import { TfaStore } from '@verdaccio/auth';
 
+import access from './access';
 import distTags from './dist-tags';
 import pkg from './package';
 import ping from './ping';
 import publish from './publish';
-import { assertTokenStoreSupport, requireOtp } from './require-otp';
+import registry, { metrics } from './registry';
+import { assertTokenStoreSupport, requireOtp, requirePackagePublishOtp } from './require-otp';
 import search from './search';
 import stage from './stage';
 import user from './user';
@@ -58,6 +60,8 @@ export default function (config: Config, auth: Auth, storage: Storage, logger: L
   // bearer token is foreign and, under AES-legacy security, the auth
   // middleware would answer a hard 401 before this route is reached
   oidcExchange(app, auth, storage, config, logger);
+  // the metrics bearer token is not a registry credential; mount before JWT
+  metrics(app, config, storage, logger);
 
   app.use(WebUrlsNamespace.endpoints, (_req, _res, next) => next('router'));
 
@@ -87,6 +91,7 @@ export default function (config: Config, auth: Auth, storage: Storage, logger: L
     getUsername: (req) => (typeof req.body?.name === 'string' ? req.body.name : undefined),
   });
   const otpForWrites = requireOtp({ tfaStore, scope: 'write', logger });
+  const otpForPackagePublish = requirePackagePublishOtp(storage, tfaStore, logger);
 
   app.use(enforceGeneratedTokenMetadata(storage, logger));
   app.use(antiLoop(config));
@@ -99,10 +104,12 @@ export default function (config: Config, auth: Auth, storage: Storage, logger: L
   search(app, logger);
   user(app, auth, config, logger, otpForLogin);
   distTags(app, auth, storage, logger, otpForWrites);
-  publish(app, auth, storage, config, logger, otpForWrites);
+  publish(app, auth, storage, config, logger, otpForWrites, otpForPackagePublish);
   ping(app);
   v1Search(app, auth, storage, config, logger);
   token(app, auth, storage, config, logger, otpForAuth);
+  registry(app, auth, config, storage, logger);
+  access(app, auth, config, storage, logger);
   // must stay before pkg(): its '/:package{/:version}' route would otherwise
   // swallow GET /-/stage
   if (config.flags?.stage) {

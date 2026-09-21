@@ -16,7 +16,10 @@ import { loadPrivatePackages } from './pkg-utils';
 import { _dbGenPath } from './utils';
 
 const TOKEN_DB_NAME = '.token-db.json';
+const STATS_DB_NAME = '.stats-db.json';
 const DB_NAME = process.env.VERDACCIO_STORAGE_NAME ?? fileUtils.Files.DatabaseName;
+
+type StatsDatabase = { packages: Record<string, Record<string, number>> };
 
 const debug = buildDebug('verdaccio:plugin:local-storage');
 
@@ -33,11 +36,17 @@ class LocalDatabase extends pluginUtils.Plugin<{}> implements Storage {
   public data: LocalStorage | undefined;
   public locked: boolean;
   public tokenDb: Low<Record<string, Token[]>> | null;
+  private statsDb: Low<StatsDatabase> | null;
+  private pendingDownloads: Record<string, Record<string, number>>;
+  private statsFlushTimer: NodeJS.Timeout | null;
 
   public constructor(config: Config, logger: Logger) {
     // TODO: fix double config
     super(config, { config, logger });
     this.tokenDb = null;
+    this.statsDb = null;
+    this.pendingDownloads = {};
+    this.statsFlushTimer = null;
     this.config = config;
     this.logger = logger;
     this.locked = false;
@@ -369,6 +378,73 @@ class LocalDatabase extends pluginUtils.Plugin<{}> implements Storage {
     const db = await this.getTokenDb();
     const tokens = db.data[user];
     return tokens || [];
+  }
+
+  private async getStatsDb(): Promise<Low<StatsDatabase>> {
+    if (!this.statsDb) {
+      let adapter;
+      if (process.env.NODE_ENV === 'test') {
+        adapter = new Memory<StatsDatabase>();
+      } else {
+        adapter = new JSONFile<StatsDatabase>(_dbGenPath(STATS_DB_NAME, this.config));
+      }
+      this.statsDb = new Low<StatsDatabase>(adapter, { packages: {} });
+      await this.statsDb.read();
+      if (!this.statsDb.data?.packages) {
+        this.statsDb.data = { packages: {} };
+      }
+    }
+    return this.statsDb;
+  }
+
+  /**
+   * Downloads can arrive in bursts (`npm ci` pulls hundreds of tarballs), so
+   * counters accumulate in memory and flush to disk on a short timer and on
+   * reads, keeping write amplification low without losing accuracy.
+   */
+  public async recordPackageDownload(packageName: string, day: string): Promise<void> {
+    const pending = (this.pendingDownloads[packageName] ??= {});
+    pending[day] = (pending[day] ?? 0) + 1;
+    if (this.statsFlushTimer === null) {
+      this.statsFlushTimer = setTimeout(() => {
+        this.statsFlushTimer = null;
+        this.flushDownloads().catch((err) =>
+          this.logger.warn({ err }, 'download stats flush failed: @{err.message}')
+        );
+      }, 5000);
+      this.statsFlushTimer.unref();
+    }
+  }
+
+  private async flushDownloads(): Promise<void> {
+    if (Object.keys(this.pendingDownloads).length === 0) {
+      return;
+    }
+    const db = await this.getStatsDb();
+    for (const [name, days] of Object.entries(this.pendingDownloads)) {
+      const counters = (db.data.packages[name] ??= {});
+      for (const [day, count] of Object.entries(days)) {
+        counters[day] = (counters[day] ?? 0) + count;
+      }
+    }
+    this.pendingDownloads = {};
+    await db.write();
+  }
+
+  public async getPackageDownloads(packageName: string): Promise<Record<string, number>> {
+    await this.flushDownloads();
+    const db = await this.getStatsDb();
+    return { ...db.data.packages[packageName] };
+  }
+
+  public async getAllPackageDownloads(): Promise<Record<string, Record<string, number>>> {
+    await this.flushDownloads();
+    const db = await this.getStatsDb();
+    const copy: Record<string, Record<string, number>> = {};
+    for (const [name, days] of Object.entries(db.data.packages)) {
+      copy[name] = { ...days };
+    }
+    return copy;
   }
 }
 

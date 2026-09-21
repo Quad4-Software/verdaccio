@@ -69,6 +69,21 @@ export enum PROFILE_API_ENDPOINTS {
   get_profile = '/-/npm/v1/user',
 }
 
+export enum REGISTRY_API_ENDPOINTS {
+  signing_keys = '/-/npm/v1/keys',
+  attestations = '/-/npm/v1/attestations/{*spec}',
+  downloads = '/-/npm/v1/downloads/:kind/:period{/:package}',
+  starred_by_user = '/-/_view/starredByUser',
+  collaborators = '/-/package/:package/collaborators',
+  collaborator = '/-/package/:package/collaborators/:user',
+  package_visibility = '/-/package/:package/visibility',
+  package_access = '/-/package/:package/access',
+  user_packages = '/-/user/:user/package',
+  org_packages = '/-/org/:scope/package',
+  team_package = '/-/team/:scope/:team/package',
+  prometheus_metrics = '/-/metrics',
+}
+
 export enum TOKEN_API_ENDPOINTS {
   get_tokens = '/-/npm/v1/tokens',
   delete_token = '/-/npm/v1/tokens/token/:tokenKey',

@@ -47,7 +47,7 @@ export function getUIOptions(
   const logo = resolveLogo(config?.web?.logo, config?.url_prefix, requestOptions);
   const logoDark = resolveLogo(config?.web?.logoDark, config?.url_prefix, requestOptions);
   const pkgManagers = config?.web?.pkgManagers ?? ['yarn', 'pnpm', 'npm'];
-  const version = res.locals.app_version ?? '';
+  const version = config?.web?.showVersion === false ? undefined : (res.locals.app_version ?? '');
   const flags = {
     ...config.flags,
     // legacy from 5.x

@@ -29,6 +29,7 @@ export enum WebUrls {
   admin_package_visibility = '/admin/packages/visibility/:package',
   admin_metrics = '/admin/metrics',
   admin_audit = '/admin/audit',
+  admin_retention = '/admin/retention',
 }
 
 /**

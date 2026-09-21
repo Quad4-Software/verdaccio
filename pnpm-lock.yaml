@@ -1525,12 +1525,18 @@ importers:
       debug:
         specifier: 4.4.3
         version: 4.4.3(supports-color@5.5.0)
+      gunzip-maybe:
+        specifier: 1.4.2
+        version: 1.4.2
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
       semver:
         specifier: 7.8.5
         version: 7.8.5
+      tar-stream:
+        specifier: 3.2.1
+        version: 3.2.1
     devDependencies:
       '@types/lodash-es':
         specifier: 4.17.12

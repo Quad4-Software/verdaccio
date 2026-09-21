@@ -132,10 +132,15 @@ export function validatePassword(
   if (validation instanceof RegExp) {
     regex = validation;
   } else if (typeof validation === 'string') {
-    // YAML config loads `passwordValidationRegex` as a plain string,
-    // so coerce it into a RegExp here. Invalid patterns fall back to false.
+    // YAML config loads `passwordValidationRegex` as a plain string, and
+    // operators commonly write it JS-literal style ('/x{12}$/'); the slashes
+    // would otherwise be treated as literal characters and make the pattern
+    // unmatchable, rejecting every password
+    const literal = validation.match(/^\/(.+)\/([a-z]*)$/s);
+    const source = literal ? literal[1] : validation;
+    const flags = literal ? literal[2] : undefined;
     try {
-      regex = new RegExp(validation);
+      regex = new RegExp(source, flags);
     } catch {
       return false;
     }

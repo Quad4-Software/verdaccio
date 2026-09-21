@@ -85,6 +85,15 @@ export interface Storage<PluginConfig> extends Plugin<PluginConfig> {
   saveToken(token: Token): Promise<any>;
   deleteToken(user: string, tokenKey: string): Promise<any>;
   readTokens(filter: TokenFilter): Promise<Token[]>;
+  /**
+   * Persist one tarball download for `day` (YYYY-MM-DD, UTC). Optional:
+   * registries running a storage plugin without stats support skip counting.
+   */
+  recordPackageDownload?(packageName: string, day: string): Promise<void>;
+  /** Per-day download counters for one package, keyed by YYYY-MM-DD. */
+  getPackageDownloads?(packageName: string): Promise<Record<string, number>>;
+  /** Per-day download counters for every package, keyed by package then day. */
+  getAllPackageDownloads?(): Promise<Record<string, Record<string, number>>>;
 }
 
 // --- MIDDLEWARE PLUGIN ---

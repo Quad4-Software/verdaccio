@@ -2,11 +2,12 @@ import type { RequestHandler, Router } from 'express';
 
 import type { Auth } from '@verdaccio/auth';
 import { HEADERS, constants, errorUtils, reqUtils } from '@verdaccio/core';
-import { DIST_TAGS_API_ENDPOINTS, allow, getRequestOptions, media } from '@verdaccio/middleware';
+import { DIST_TAGS_API_ENDPOINTS, getRequestOptions, media } from '@verdaccio/middleware';
 import { assertPackageVisibility } from '@verdaccio/store';
 import type { Storage } from '@verdaccio/store';
 import type { Logger } from '@verdaccio/types';
 
+import { allowWithCollaborators } from './collaborator-access';
 import type { $NextFunctionVer, $RequestExtend, $ResponseExtend } from '../types/custom';
 
 export default function (
@@ -17,10 +18,7 @@ export default function (
   /** No-op unless the caller has two-factor enabled for this operation. */
   requireOtp: RequestHandler = (_req, _res, next) => next()
 ): void {
-  const can = allow(auth, {
-    beforeAll: (a, b) => logger.trace(a, b),
-    afterAll: (a, b) => logger.trace(a, b),
-  });
+  const can = allowWithCollaborators(auth, storage, logger);
   const addTagPackageVersionMiddleware = async function (
     req: $RequestExtend,
     res: $ResponseExtend,

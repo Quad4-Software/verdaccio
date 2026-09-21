@@ -16,7 +16,8 @@ const schema: JSONSchemaType<Manifest> = {
   properties: {
     name: { type: 'string' },
     versions: { type: 'object', maxProperties: 1 },
-    _attachments: { type: 'object', maxProperties: 1 },
+    // npm publish --provenance adds a second .sigstore attachment
+    _attachments: { type: 'object', minProperties: 1, maxProperties: 2 },
   },
   required: ['name', 'versions', '_attachments'],
   additionalProperties: true,
