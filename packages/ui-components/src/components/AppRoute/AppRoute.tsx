@@ -15,8 +15,10 @@ const Success = loadable(() => import('../../pages/Security/Success'));
 const AddUser = loadable(() => import('../../pages/Security/AddUser'));
 const SetupAdmin = loadable(() => import('../../pages/Security/SetupAdmin'));
 const ChangePassword = loadable(() => import('../../pages/Security/ChangePassword'));
+const TwoFactorAuth = loadable(() => import('../../pages/Security/TwoFactorAuth'));
 const StageList = loadable(() => import('../../pages/Stage/StageList'));
 const StageDetail = loadable(() => import('../../pages/Stage/StageDetail'));
+const Admin = loadable(() => import('../../pages/Admin/Admin'));
 
 const versionElement = (
   <VersionProvider>
@@ -29,6 +31,7 @@ const AppRoute: React.FC = () => {
   const createUserEnabled = configOptions?.flags?.createUser;
   const changePasswordEnabled = configOptions?.flags?.changePassword;
   const stageEnabled = configOptions?.flags?.stage;
+  const tfaEnabled = configOptions?.flags?.tfa;
   return (
     <SWRConfig value={{ revalidateOnFocus: false, revalidateOnReconnect: false }}>
       <Routes>
@@ -58,7 +61,9 @@ const AppRoute: React.FC = () => {
           {changePasswordEnabled && (
             <RouterRoute element={<ChangePassword />} path={Route.CHANGE_PASSWORD} />
           )}
+          {tfaEnabled && <RouterRoute element={<TwoFactorAuth />} path={Route.TWO_FACTOR} />}
         </RouterRoute>
+        <RouterRoute element={<Admin />} path={Route.ADMIN} />
         <RouterRoute element={<NotFound />} path="*" />
       </Routes>
     </SWRConfig>

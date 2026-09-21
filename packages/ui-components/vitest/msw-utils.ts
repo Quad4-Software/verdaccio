@@ -335,3 +335,153 @@ export const mockOidcConfig = () =>
       authorize: '/-/oauth/authorize',
     });
   }) as unknown as MswResolver);
+
+/**
+ * Mocks the admin endpoints under /-/verdaccio/data/admin. Module scope state
+ * mirrors the server: admin status, the user table and the audit list, reset
+ * between tests with resetAdminMock.
+ */
+let adminState = {
+  admin: true,
+  userManagement: true,
+  users: [
+    { name: 'admin', admin: true, tfa: true },
+    { name: 'worker', admin: false, tfa: false },
+  ],
+  packages: [
+    { name: 'public-pkg', version: '1.0.0', visibility: 'public' },
+    { name: 'secret-pkg', version: '2.0.0', visibility: 'private' },
+  ],
+  audit: [
+    {
+      time: '2025-01-01T00:00:00.000Z',
+      actor: 'admin',
+      action: 'user.create',
+      target: 'worker',
+    },
+  ],
+};
+
+export const resetAdminMock = () => {
+  adminState = {
+    admin: true,
+    userManagement: true,
+    users: [
+      { name: 'admin', admin: true, tfa: true },
+      { name: 'worker', admin: false, tfa: false },
+    ],
+    packages: [
+      { name: 'public-pkg', version: '1.0.0', visibility: 'public' },
+      { name: 'secret-pkg', version: '2.0.0', visibility: 'private' },
+    ],
+    audit: [
+      {
+        time: '2025-01-01T00:00:00.000Z',
+        actor: 'admin',
+        action: 'user.create',
+        target: 'worker',
+      },
+    ],
+  };
+};
+
+export const setAdminStatus = (admin: boolean, userManagement = true) => {
+  adminState.admin = admin;
+  adminState.userManagement = userManagement;
+};
+
+export const getAdminState = () => adminState;
+
+const forbidden = () =>
+  new HttpResponse(JSON.stringify({ error: 'administrator rights are required' }), {
+    status: 403,
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+export const mockAdmin = () => [
+  http.get(`${BASE_URL}/-/verdaccio/data/admin/status`, (() =>
+    HttpResponse.json({
+      admin: adminState.admin,
+      userManagement: adminState.userManagement,
+    })) as unknown as MswResolver),
+  http.get(`${BASE_URL}/-/verdaccio/data/admin/users`, (() => {
+    if (!adminState.admin) {
+      return forbidden();
+    }
+    return HttpResponse.json({ users: adminState.users });
+  }) as unknown as MswResolver),
+  http.post(`${BASE_URL}/-/verdaccio/data/admin/users`, (async ({ request }) => {
+    if (!adminState.admin) {
+      return forbidden();
+    }
+    const body = (await request.json()) as { username: string; password: string };
+    if (adminState.users.some((u) => u.name === body.username)) {
+      return new HttpResponse(JSON.stringify({ error: 'user exists' }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    adminState.users.push({ name: body.username, admin: false, tfa: false });
+    adminState.audit.unshift({
+      time: new Date().toISOString(),
+      actor: 'admin',
+      action: 'user.create',
+      target: body.username,
+    });
+    return HttpResponse.json({ success: true, username: body.username });
+  }) as unknown as MswResolver),
+  http.delete(`${BASE_URL}/-/verdaccio/data/admin/users/:user`, (({ params }) => {
+    if (!adminState.admin) {
+      return forbidden();
+    }
+    adminState.users = adminState.users.filter((u) => u.name !== params.user);
+    return HttpResponse.json({ success: true });
+  }) as unknown as MswResolver),
+  http.put(`${BASE_URL}/-/verdaccio/data/admin/users/:user/admin`, (async ({ params, request }) => {
+    if (!adminState.admin) {
+      return forbidden();
+    }
+    const body = (await request.json()) as { admin: boolean };
+    const user = adminState.users.find((u) => u.name === params.user);
+    if (!user) {
+      return new HttpResponse(JSON.stringify({ error: 'not found' }), { status: 404 });
+    }
+    user.admin = body.admin === true;
+    return HttpResponse.json({ success: true, admin: user.admin });
+  }) as unknown as MswResolver),
+  http.put(`${BASE_URL}/-/verdaccio/data/admin/users/:user/password`, (async () =>
+    HttpResponse.json({ success: true })) as unknown as MswResolver),
+  http.delete(`${BASE_URL}/-/verdaccio/data/admin/users/:user/tfa`, (({ params }) => {
+    if (!adminState.admin) {
+      return forbidden();
+    }
+    const user = adminState.users.find((u) => u.name === params.user);
+    if (user) {
+      user.tfa = false;
+    }
+    return HttpResponse.json({ success: true });
+  }) as unknown as MswResolver),
+  http.get(`${BASE_URL}/-/verdaccio/data/admin/packages`, (() =>
+    HttpResponse.json({ packages: adminState.packages })) as unknown as MswResolver),
+  http.put(`${BASE_URL}/-/verdaccio/data/admin/packages/visibility/*`, (async ({ request }) => {
+    const body = (await request.json()) as { visibility: 'public' | 'private' };
+    const name = decodeURIComponent(String(request.url).split('/packages/visibility/')[1] ?? '');
+    const pkg = adminState.packages.find((p) => p.name === name);
+    if (pkg) {
+      pkg.visibility = body.visibility;
+    }
+    return HttpResponse.json({ success: true, name, visibility: body.visibility });
+  }) as unknown as MswResolver),
+  http.get(`${BASE_URL}/-/verdaccio/data/admin/metrics`, (() =>
+    HttpResponse.json({
+      version: '9.0.0-test',
+      node: 'v24.0.0',
+      uptime: 3661,
+      startedAt: '2025-01-01T00:00:00.000Z',
+      memory: { rss: 128 * 1024 * 1024, heapTotal: 64 * 1024 * 1024, heapUsed: 32 * 1024 * 1024 },
+      counts: { packages: adminState.packages.length, users: adminState.users.length },
+      requests: { total: 42, byStatus: { '2xx': 40, '4xx': 2 } },
+    })) as unknown as MswResolver),
+  http.get(`${BASE_URL}/-/verdaccio/data/admin/audit`, (() =>
+    HttpResponse.json({ audit: adminState.audit })) as unknown as MswResolver),
+];

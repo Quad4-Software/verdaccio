@@ -3,6 +3,8 @@ import { minimatch } from 'minimatch';
 
 import type { PackageAccess, PackageList, RemoteUser } from '@verdaccio/types';
 
+import { ROLES } from './constants';
+
 export interface CookieSessionToken {
   expires: Date;
 }
@@ -42,6 +44,20 @@ export function isUserInGroups(user: RemoteUser, groupsList: string[]): boolean 
  */
 export function isPrivateVisibility(visibility: unknown): boolean {
   return visibility === 'private';
+}
+
+/**
+ * An admin is a logged user carrying the $admin group (auth plugins attach it)
+ * or matching the security.admins list from the configuration.
+ */
+export function isAdmin(user: RemoteUser | undefined, adminsList?: string[]): boolean {
+  if (typeof user?.name !== 'string' || user.name === '') {
+    return false;
+  }
+  if (Array.isArray(user.groups) && user.groups.includes(ROLES.$ADMIN)) {
+    return true;
+  }
+  return Array.isArray(adminsList) && isUserInGroups(user, adminsList);
 }
 
 export function getMatchedPackagesSpec(

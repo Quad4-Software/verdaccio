@@ -16,7 +16,7 @@ import type {
 } from '@verdaccio/types';
 
 import { getUserAgent } from './agent';
-import { normalisePackageAccess } from './package-access';
+import { normalisePackageAccess, normalizeUserList } from './package-access';
 import { defaultSecurity } from './security';
 import defaultServerSettings from './serverSettings';
 import { generateRandomSecretKey } from './token';
@@ -26,7 +26,7 @@ const strategicConfigProps = ['uplinks', 'packages'];
 const allowedEnvConfig = ['http_proxy', 'https_proxy', 'no_proxy'];
 const debug = buildDebug('verdaccio:config');
 
-export const WEB_TITLE = 'Verdaccio';
+export const WEB_TITLE = 'Registry';
 
 // we limit max 1000 request per 15 minutes on user endpoints
 export const defaultUserRateLimiting = {
@@ -70,6 +70,7 @@ class Config implements AppConfig {
     debug('config path: %s', this.configPath);
     this.plugins = config.plugins;
     this.security = merge(defaultSecurity, config.security);
+    this.security.admins = normalizeUserList(this.security.admins);
     this.server = merge({}, defaultServerSettings, config.server);
     this.flags = {
       changePassword: config.flags?.changePassword ?? false,

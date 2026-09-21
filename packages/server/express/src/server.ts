@@ -29,6 +29,7 @@ import {
   log,
   rateLimit,
   registerBodyParser,
+  requestMetrics,
   setSecurityWebHeaders,
   userAgent,
   WebUrlsNamespace,
@@ -75,6 +76,7 @@ export const defineAPI = async function (config: IConfig, storage: Storage): Pro
   // security headers on every response, not only the web namespace: nosniff
   // and frame denial matter for packuments and tarballs served to browsers
   app.use(setSecurityWebHeaders);
+  app.use(requestMetrics);
 
   const errorReportingMiddlewareWrap = errorReportingMiddleware(logger);
 

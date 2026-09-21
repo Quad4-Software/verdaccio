@@ -237,6 +237,11 @@ export interface APITokenOptions {
 export interface Security {
   web: JWTOptions;
   api: APITokenOptions;
+  /**
+   * Users or groups with administrator rights in the web ui and admin api.
+   * Users carrying the $admin group (set by auth plugins) are admins as well.
+   */
+  admins?: string[];
 }
 
 export type ReadmeOptions = 'latest' | 'tagged' | 'all';

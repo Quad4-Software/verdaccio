@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { WebUrlsNamespace, rateLimit } from '@verdaccio/middleware';
 
 import { hasLogin } from '../web-utils';
+import admin from './admin';
 import packageApi from './package';
 import readme from './readme';
 import search from './search';
@@ -26,6 +27,7 @@ export default (auth, storage, config) => {
   route.use(WebUrlsNamespace.data, sidebar(config, storage, auth));
   route.use(WebUrlsNamespace.data, readme(storage, auth, config));
   route.use(WebUrlsNamespace.data, visibility(storage, auth, config));
+  route.use(WebUrlsNamespace.data, admin(storage, auth, config));
   if (hasLogin(config)) {
     route.use(WebUrlsNamespace.sec, user(auth, config, storage));
     route.use(WebUrlsNamespace.sec, setup(auth, config));

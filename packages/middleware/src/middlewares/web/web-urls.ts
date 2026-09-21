@@ -15,6 +15,17 @@ export enum WebUrls {
   reset_password = '/reset_password',
   setup = '/setup',
   setup_status = '/setup/status',
+  admin_status = '/admin/status',
+  admin_users = '/admin/users',
+  admin_user = '/admin/users/:user',
+  admin_user_password = '/admin/users/:user/password',
+  admin_user_tfa = '/admin/users/:user/tfa',
+  admin_user_admin = '/admin/users/:user/admin',
+  admin_packages = '/admin/packages',
+  admin_package_visibility_scoped = '/admin/packages/visibility/:scope/:package',
+  admin_package_visibility = '/admin/packages/visibility/:package',
+  admin_metrics = '/admin/metrics',
+  admin_audit = '/admin/audit',
 }
 
 /**

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 
 import { MenuItem } from '../../';
 import { useConfig } from '../../providers/AppConfigurationProvider/AppConfigurationProvider';
+import { useAdminStatus } from '../../sections/Admin/useAdmin';
 import { Route } from '../../utils';
 import HeaderGreetings from './HeaderGreetings';
 
@@ -36,6 +37,8 @@ const HeaderMenu: React.FC<Props> = ({
   const { configOptions } = useConfig();
   const stageEnabled = configOptions?.flags?.stage;
   const tfaEnabled = configOptions?.flags?.tfa;
+  // one extra request per session decides whether the admin entry renders
+  const { status } = useAdminStatus();
   return (
     <>
       <IconButton
@@ -85,6 +88,18 @@ const HeaderMenu: React.FC<Props> = ({
             }}
           >
             {t('security.tfa.menu')}
+          </MenuItem>
+        )}
+        {status?.admin === true && (
+          <MenuItem
+            data-testid="adminMenuItem"
+            id="adminMenuItem"
+            onClick={() => {
+              onLoggedInMenuClose();
+              navigate(Route.ADMIN);
+            }}
+          >
+            {t('admin.menu')}
           </MenuItem>
         )}
         <MenuItem data-testid="logOutDialogIcon" id="logOutDialogIcon" onClick={onLogout}>

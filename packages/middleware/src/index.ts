@@ -12,6 +12,8 @@ export { allow } from './middlewares/allow';
 export { enforceGeneratedTokenMetadata } from './middlewares/token-auth';
 export type { TokenReadableStorage } from './middlewares/token-auth';
 export { rateLimit } from './middlewares/rate-limit';
+export { requestMetrics, getRequestMetrics } from './middlewares/request-metrics';
+export type { RequestMetrics } from './middlewares/request-metrics';
 export { registerBodyParser } from './middlewares/body-parser';
 export { userAgent } from './middlewares/user-agent';
 export { webMiddleware, renderWebMiddleware, setSecurityWebHeaders } from './middlewares/web';

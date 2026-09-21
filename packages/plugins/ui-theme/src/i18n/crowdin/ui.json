@@ -160,7 +160,8 @@
     "logout": "Logout",
     "go-to-the-home-page": "Go to the home page",
     "learn-more": "Learn More",
-    "fund-this-package": "<0>Fund</0> this package"
+    "fund-this-package": "<0>Fund</0> this package",
+    "confirm": "Confirm"
   },
   "error": {
     "401": {
@@ -344,5 +345,80 @@
       "invalid-next-param": "Missing or invalid next parameter in login request"
     }
   },
-  "about": "About"
+  "about": "About",
+  "admin": {
+    "menu": "Administration",
+    "title": "Administration",
+    "metrics": {
+      "title": "Registry status",
+      "version": "Version",
+      "node": "Node.js",
+      "uptime": "Uptime",
+      "packages": "Packages",
+      "users": "Users",
+      "requests": "Requests",
+      "memory": "Memory (RSS)"
+    },
+    "users": {
+      "title": "Users",
+      "create": "Create user",
+      "admin": "Admin",
+      "tfa": "2FA",
+      "grant-admin": "Grant admin",
+      "revoke-admin": "Revoke admin",
+      "reset-password": "Reset password",
+      "reset-tfa": "Reset 2FA",
+      "delete": "Delete",
+      "field": {
+        "username": "Username",
+        "password": "Password",
+        "new-password": "New password"
+      },
+      "column": {
+        "name": "User",
+        "admin": "Role",
+        "tfa": "2FA",
+        "actions": "Actions"
+      },
+      "confirm": {
+        "delete-title": "Delete this user?",
+        "delete-body": "The account {{user}} and its two-factor settings will be permanently removed.",
+        "tfa-title": "Reset two-factor authentication?",
+        "tfa-body": "The user {{user}} will be able to sign in with only a password and can enrol again afterwards.",
+        "password-title": "Reset the password?",
+        "password-body": "Set a new password for {{user}}. The old password stops working immediately."
+      }
+    },
+    "packages": {
+      "title": "Packages",
+      "empty": "There are no local packages.",
+      "public": "Public",
+      "private": "Private",
+      "make-public": "Make public",
+      "make-private": "Make private",
+      "column": {
+        "name": "Package",
+        "version": "Version",
+        "visibility": "Visibility",
+        "actions": "Actions"
+      }
+    },
+    "audit": {
+      "title": "Recent administrative actions",
+      "empty": "No administrative actions recorded yet.",
+      "column": {
+        "time": "Time",
+        "actor": "Actor",
+        "action": "Action",
+        "target": "Target",
+        "detail": "Detail"
+      }
+    },
+    "error": {
+      "not-admin": "Administrator rights are required to view this page.",
+      "users": "The user list could not be loaded.",
+      "packages": "The package list could not be loaded.",
+      "action": "The action could not be completed."
+    }
+  }
 }

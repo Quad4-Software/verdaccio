@@ -1,5 +1,6 @@
 import {
   mockAddUser,
+  mockAdmin,
   mockCliLogin,
   mockHomePackages,
   mockLogin,
@@ -34,6 +35,7 @@ export const handlers = [
   mockOidcConfig(),
   ...mockProfile(),
   mockVisibilityUpdate(),
+  ...mockAdmin(),
   // Error presets
   mockSidebar('JSONStream', null, 401),
   mockSidebar('kleur', null, 404),

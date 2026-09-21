@@ -247,7 +247,9 @@ export class TfaStore {
   /** Drop a user's 2FA configuration entirely. */
   public async disable(username: string): Promise<void> {
     await this.enqueueUserMutation(username, async () => {
-      await this.storage.deleteToken(username, TFA_TOKEN_KEY);
+      // deleteToken rejects when the user never stored anything; disabling a
+      // user with no enrolment is a no-op, not an error
+      await this.storage.deleteToken(username, TFA_TOKEN_KEY).catch(() => undefined);
       debug('two-factor disabled for %o', username);
     });
   }

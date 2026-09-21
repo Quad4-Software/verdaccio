@@ -1,0 +1,27 @@
+storage: ./storage
+
+auth:
+  htpasswd:
+    file: ./htpasswd-admin
+
+security:
+  admins: admin
+
+web:
+  title: verdaccio
+
+publish:
+  allow_offline: false
+
+uplinks:
+
+log: { type: stdout, format: pretty, level: trace }
+
+flags:
+  tfa: true
+
+packages:
+  '**':
+    access: $all
+    publish: $authenticated
+_debug: true

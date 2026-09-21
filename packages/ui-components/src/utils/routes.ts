@@ -15,6 +15,8 @@ export enum Route {
   // Staged publish workflow (`npm stage`), behind the `stage` flag
   STAGE = '/-/web/stage',
   STAGE_DETAIL = '/-/web/stage/:stageId',
+  // Administration panel, gated client-side by the admin status endpoint
+  ADMIN = '/-/web/admin',
   // Security API routes
   LOGIN_API = '/-/v1/login_cli',
   CHANGE_PASSWORD_API = '/-/npm/v1/user',
@@ -38,6 +40,9 @@ export enum APIRoute {
   SIDEBAR = '/-/verdaccio/data/sidebar/', // :packageName?v=version
   README = '/-/verdaccio/data/package/readme/', // :packageName?v=version
   VISIBILITY = '/-/verdaccio/data/package/visibility/', // :packageName
+  // admin endpoints: /status, /users, /users/:user/*, /packages,
+  // /packages/visibility/:name, /metrics, /audit
+  ADMIN = '/-/verdaccio/data/admin',
   // served by the registry router, not the web one, like CHANGE_PASSWORD_API
   STAGE = '/-/stage',
 }

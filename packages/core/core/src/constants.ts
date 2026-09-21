@@ -147,6 +147,7 @@ export const ROLES = {
   ALL: 'all',
   $AUTH: '$authenticated',
   $ANONYMOUS: '$anonymous',
+  $ADMIN: '$admin',
   DEPRECATED_ALL: '@all',
   DEPRECATED_AUTH: '@authenticated',
   DEPRECATED_ANONYMOUS: '@anonymous',

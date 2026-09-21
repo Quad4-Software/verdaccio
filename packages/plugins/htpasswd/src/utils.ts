@@ -253,6 +253,48 @@ export async function changePasswordToHTPasswd(
   return lines.join('\n');
 }
 
+/**
+ * setPasswordToHTPasswd - replace a user's password without checking the old
+ * one; backs the admin reset flow where no previous password is known
+ * @param {string} body
+ * @param {string} user
+ * @param {string} newPasswd
+ * @param {HtpasswdHashConfig} hashConfig
+ * @returns {Promise<string>}
+ */
+export async function setPasswordToHTPasswd(
+  body: string,
+  user: string,
+  newPasswd: string,
+  hashConfig: HtpasswdHashConfig
+): Promise<string> {
+  const lines = body.split('\n');
+  const userLineIndex = lines.findIndex((line) => line.split(':', 1).shift() === user);
+  if (userLineIndex === -1) {
+    debug('user %o does not exist', user);
+    throw new Error(`Unable to set password for user '${user}': user does not currently exist`);
+  }
+  const updatedUserLine = await generateHtpasswdLine(user, newPasswd, hashConfig);
+  lines.splice(userLineIndex, 1, updatedUserLine);
+  return lines.join('\n');
+}
+
+/**
+ * removeUserFromHTPasswd - drop a user's line from the file body
+ * @param {string} body
+ * @param {string} user
+ * @returns {string}
+ */
+export function removeUserFromHTPasswd(body: string, user: string): string {
+  const lines = body.split('\n');
+  const userLineIndex = lines.findIndex((line) => line.split(':', 1).shift() === user);
+  if (userLineIndex === -1) {
+    throw new Error(`Unable to remove user '${user}': user does not currently exist`);
+  }
+  lines.splice(userLineIndex, 1);
+  return lines.join('\n');
+}
+
 export function stringToUtf8(authentication: string): string {
   return (authentication || '').toString();
 }

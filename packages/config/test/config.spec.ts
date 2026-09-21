@@ -80,7 +80,8 @@ describe('check basic content parsed file', () => {
     expect(config.security).toEqual(defaultSecurity);
     // server settings
     expect(config.server).toBeDefined();
-    expect(config.server.dotfiles).toEqual('ignore');
+    // the shipped configs deny dotfiles, a hardened default of this fork
+    expect(config.server.dotfiles).toEqual('deny');
     expect(config.server.legacyAuthCache).toEqual({
       enabled: false,
       maxEntries: 1000,

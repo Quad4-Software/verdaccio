@@ -40,3 +40,16 @@ verdaccio setup-link
 ```
 
 The running server picks up the new link without a restart.
+
+## Administration
+
+Admins see an Administration entry in the account menu (`/-/web/admin`): registry metrics, user management (create, delete, reset password, reset 2FA, grant or revoke admin), package visibility toggles, and the recent admin action log.
+
+A user is an admin when the auth plugin returns the `$admin` group for them or when they match `security.admins` in the config:
+
+```yaml
+security:
+  admins: alice bob
+```
+
+Group names from the auth plugin work too. User management needs an auth plugin that exposes it; the bundled htpasswd plugin does and stores the admin list in `<htpasswd file>.admins`. The action log is held in memory and resets on restart.

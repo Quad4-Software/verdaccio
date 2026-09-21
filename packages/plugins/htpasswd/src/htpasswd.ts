@@ -6,6 +6,7 @@ import { constants, pluginUtils } from '@verdaccio/core';
 import { unlockFile } from '@verdaccio/file-locking';
 import type { Callback, Logger } from '@verdaccio/types';
 
+import { readAdmins, setAdmin } from './admins';
 import {
   consumeSetupLink,
   inspectSetupLink,
@@ -19,7 +20,9 @@ import {
   changePasswordToHTPasswd,
   lockAndRead,
   parseHTPasswd,
+  removeUserFromHTPasswd,
   sanityCheck,
+  setPasswordToHTPasswd,
   stringToUtf8,
   verifyPassword,
 } from './utils';
@@ -177,8 +180,9 @@ export default class HTPasswd
       // authentication succeeded!
       // return all usergroups this user has access to;
       // (this particular package has no concept of usergroups, so just return
-      // user herself)
-      return cb(null, [user]);
+      // user herself; registry admins also carry the magic $admin group)
+      const groups = readAdmins(this.path).includes(user) ? [user, '$admin'] : [user];
+      return cb(null, groups);
     });
   }
 
@@ -202,7 +206,124 @@ export default class HTPasswd
 
   public bootstrapAdmin(user: string, password: string, realCb: Callback): Promise<any> {
     this.bootstrapRequest = true;
-    return this.adduser(user, password, realCb);
+    return this.adduser(user, password, (err, ok): void => {
+      if (!err && ok) {
+        // the first account is the bootstrap admin; keep it on disk so the
+        // $admin group survives restarts
+        try {
+          setAdmin(this.path, user, true);
+        } catch (error: any) {
+          this.logger.warn(
+            { message: error?.message },
+            'could not record the bootstrap admin: @{message}'
+          );
+        }
+      }
+      realCb(err, ok);
+    });
+  }
+
+  /**
+   * listUsers - all usernames in the htpasswd file, for the admin api.
+   */
+  public listUsers(realCb: Callback): void {
+    this.reload((err) => {
+      if (err) {
+        return realCb(err.code === 'ENOENT' ? null : err, []);
+      }
+      realCb(null, Object.keys(this.users));
+    });
+  }
+
+  /**
+   * listAdmins - usernames with administrator rights.
+   */
+  public listAdmins(): string[] {
+    return readAdmins(this.path);
+  }
+
+  /**
+   * setAdminFlag - grant or revoke administrator rights for an existing user.
+   */
+  public setAdminFlag(user: string, enabled: boolean, realCb: Callback): void {
+    this.reload((err) => {
+      if (err && err.code !== 'ENOENT') {
+        return realCb(err);
+      }
+      if (!this.users[user]) {
+        return realCb(Error(`Unable to set admin flag for user '${user}': user does not exist`));
+      }
+      try {
+        const admins = setAdmin(this.path, user, enabled);
+        realCb(null, admins.includes(user) === enabled);
+      } catch (error: any) {
+        realCb(error);
+      }
+    });
+  }
+
+  /**
+   * deleteUser - remove an account and its admin flag.
+   */
+  public deleteUser(user: string, realCb: Callback): void {
+    const pathPass = this.path;
+    lockAndRead(pathPass, (err, res): void => {
+      let locked = false;
+      const cb = (err): void => {
+        if (locked) {
+          unlockFile(pathPass, () => {
+            realCb(err, !err);
+          });
+        } else {
+          realCb(err, !err);
+        }
+      };
+      if (!err) {
+        locked = true;
+      }
+      if (err && err.code !== 'ENOENT') {
+        return cb(err);
+      }
+      const body = stringToUtf8(res);
+      try {
+        this._writeFile(removeUserFromHTPasswd(body, user), cb);
+        // drop the admin flag too, a recreated account must not inherit it
+        setAdmin(this.path, user, false);
+      } catch (error: any) {
+        return cb(error);
+      }
+    });
+  }
+
+  /**
+   * resetPassword - admin password reset, no old password required.
+   */
+  public resetPassword(user: string, newPassword: string, realCb: Callback): void {
+    const pathPass = this.path;
+    lockAndRead(pathPass, async (err, res) => {
+      let locked = false;
+      const cb = (err): void => {
+        if (locked) {
+          unlockFile(pathPass, () => {
+            realCb(err, !err);
+          });
+        } else {
+          realCb(err, !err);
+        }
+      };
+      if (!err) {
+        locked = true;
+      }
+      if (err && err.code !== 'ENOENT') {
+        return cb(err);
+      }
+      const body = stringToUtf8(res);
+      try {
+        this._writeFile(await setPasswordToHTPasswd(body, user, newPassword, this.hashConfig), cb);
+      } catch (error: any) {
+        return cb(error);
+      }
+    });
   }
 
   public inspectSetup(token: string) {
@@ -311,8 +432,9 @@ export default class HTPasswd
         if (err) {
           return callback(err);
         }
+        // replace rather than merge so deletions drop out of the cache
+        this.users = parseHTPasswd(buffer);
         debug('reload users total: %s', Object.keys(this.users).length);
-        Object.assign(this.users, parseHTPasswd(buffer));
         callback();
       });
     });
@@ -323,6 +445,9 @@ export default class HTPasswd
       if (err) {
         cb(err);
       } else {
+        // reload may skip when the mtime did not change; the body just written
+        // is the source of truth for the in-memory cache
+        this.users = parseHTPasswd(body);
         this.reload(() => {
           cb(null);
         });
