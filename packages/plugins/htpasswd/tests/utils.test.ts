@@ -106,6 +106,15 @@ describe('verifyPassword', () => {
     ];
     expect(await verifyPassword(input[0], input[1])).toBeFalsy();
   });
+  test('should verify an argon2id password', async () => {
+    const line = await generateHtpasswdLine('username', 'password', {
+      algorithm: constants.HtpasswdHashAlgorithm.argon2id,
+    });
+    const hash = line.split(':')[1];
+    expect(hash.startsWith('$argon2id$')).toBe(true);
+    expect(await verifyPassword('password', hash)).toBe(true);
+    expect(await verifyPassword('wrong', hash)).toBe(false);
+  });
 });
 
 describe('generateHtpasswdLine', () => {

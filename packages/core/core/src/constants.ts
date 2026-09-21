@@ -161,6 +161,7 @@ export enum HtpasswdHashAlgorithm {
   sha1 = 'sha1',
   crypt = 'crypt',
   bcrypt = 'bcrypt',
+  argon2id = 'argon2id',
 }
 
 export const PLUGIN_PREFIX = 'verdaccio';

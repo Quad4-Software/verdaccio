@@ -37,6 +37,7 @@
     "@verdaccio/file-locking": "workspace:14.0.0-next-9.4",
     "apache-md5": "1.1.8",
     "bcryptjs": "3.0.3",
+    "argon2": "0.45.1",
     "debug": "4.4.3",
     "http-errors": "2.0.1",
     "unix-crypt-td-js": "1.1.4"

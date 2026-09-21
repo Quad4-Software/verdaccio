@@ -7,3 +7,4 @@ export default function (config: HTPasswdConfig, params: pluginUtils.PluginOptio
 }
 
 export { HTPasswd, type HTPasswdConfig };
+export { issueSetupLink } from './setup-link';

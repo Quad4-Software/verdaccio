@@ -6,6 +6,7 @@ import { constants, pluginUtils } from '@verdaccio/core';
 import { unlockFile } from '@verdaccio/file-locking';
 import type { Callback, Logger } from '@verdaccio/types';
 
+import { consumeSetupLink, inspectSetupLink, issueSetupLink, validateSetupAccount } from './setup-link';
 import type { HtpasswdHashConfig } from './utils';
 import {
   DEFAULT_BCRYPT_ROUNDS,
@@ -51,6 +52,7 @@ export default class HTPasswd
   private slowVerifyMs: number;
   private logger: Logger;
   private lastTime: any;
+  private bootstrapRequest: boolean;
   // constructor
   public constructor(config: HTPasswdConfig, options: pluginUtils.PluginOptions) {
     super(config, options);
@@ -66,15 +68,15 @@ export default class HTPasswd
     let rounds: number | undefined;
 
     if (typeof config.algorithm === 'undefined') {
-      algorithm = constants.HtpasswdHashAlgorithm.bcrypt;
+      algorithm = constants.HtpasswdHashAlgorithm.argon2id;
     } else if (constants.HtpasswdHashAlgorithm[config.algorithm] !== undefined) {
       algorithm = constants.HtpasswdHashAlgorithm[config.algorithm];
     } else {
       this.logger.warn(
-        `The algorithm selected %s is invalid, switching to to default one "bcrypt", password validation can be affected`,
+        `The algorithm selected %s is invalid, switching to to default one "argon2id", password validation can be affected`,
         config.algorithm
       );
-      algorithm = constants.HtpasswdHashAlgorithm.bcrypt;
+      algorithm = constants.HtpasswdHashAlgorithm.argon2id;
     }
     debug(`password hash algorithm: ${algorithm}`);
     if (algorithm === constants.HtpasswdHashAlgorithm.bcrypt) {
@@ -103,6 +105,28 @@ export default class HTPasswd
       this.logger.info({ ms: config.slow_verify_ms }, 'slow_verify_ms enabled for @{ms}');
     }
     this.slowVerifyMs = config.slow_verify_ms || DEFAULT_SLOW_VERIFY_MS;
+    this.bootstrapRequest = false;
+    this.issueInitialSetupLink(options);
+  }
+
+  private issueInitialSetupLink(options: pluginUtils.PluginOptions): void {
+    try {
+      const urlPrefix = (options?.config as { url_prefix?: string } | undefined)?.url_prefix;
+      const issued = issueSetupLink(this.path, urlPrefix);
+      if (!issued) {
+        return;
+      }
+      const expires = new Date(issued.expires).toISOString();
+      this.logger.info(
+        { expires, link: issued.link },
+        'no admin account. this link works once and expires at @{expires}: @{link}'
+      );
+    } catch (error: any) {
+      this.logger.warn(
+        { message: error?.message },
+        'could not create the admin setup link: @{message}'
+      );
+    }
   }
 
   /**
@@ -167,10 +191,36 @@ export default class HTPasswd
    * @param {function} realCb
    * @returns {Promise<any>}
    */
+  public validateSetupAccount(user: string, password: string): string | null {
+    return validateSetupAccount(user, password);
+  }
+
+  public bootstrapAdmin(user: string, password: string, realCb: Callback): Promise<any> {
+    this.bootstrapRequest = true;
+    return this.adduser(user, password, realCb);
+  }
+
+  public inspectSetup(token: string) {
+    return inspectSetupLink(this.path, token);
+  }
+
+  public consumeSetup(token: string) {
+    return consumeSetupLink(this.path, token);
+  }
+
   public async adduser(user: string, password: string, realCb: Callback): Promise<any> {
+    const bootstrap = this.bootstrapRequest;
+    this.bootstrapRequest = false;
     const pathPass = this.path;
     debug('adduser %s', user);
-    let sanity = await sanityCheck(user, password, verifyPassword, this.users, this.maxUsers);
+    let sanity = await sanityCheck(
+      user,
+      password,
+      verifyPassword,
+      this.users,
+      this.maxUsers,
+      bootstrap
+    );
     debug('sanity check: %s', sanity);
     // preliminary checks, just to ensure that file won't be reloaded if it's
     // not needed
@@ -210,7 +260,14 @@ export default class HTPasswd
       debug('parsed users');
       // real checks, to prevent race conditions
       // parsing users after reading file.
-      sanity = await sanityCheck(user, password, verifyPassword, this.users, this.maxUsers);
+      sanity = await sanityCheck(
+        user,
+        password,
+        verifyPassword,
+        this.users,
+        this.maxUsers,
+        bootstrap
+      );
       debug('sanity check: %s', sanity);
       if (sanity) {
         debug('sanity check failed');

@@ -314,10 +314,10 @@ importers:
         version: link:packages/plugins/memory
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/admin-cli:
     dependencies:
@@ -418,10 +418,10 @@ importers:
         version: 7.1.4(supports-color@5.5.0)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/auth:
     dependencies:
@@ -473,10 +473,10 @@ importers:
         version: 7.1.4(supports-color@5.5.0)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/cli:
     dependencies:
@@ -504,6 +504,9 @@ importers:
       semver:
         specifier: 7.8.5
         version: 7.8.5
+      verdaccio-htpasswd:
+        specifier: workspace:14.0.0-next-9.31
+        version: link:../plugins/htpasswd
     devDependencies:
       '@verdaccio/types':
         specifier: workspace:14.0.0-next-9.14
@@ -516,10 +519,10 @@ importers:
         version: 4.22.4
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/config:
     dependencies:
@@ -544,10 +547,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/core/core:
     dependencies:
@@ -587,10 +590,10 @@ importers:
         version: 0.28.14(typescript@7.0.2)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/core/file-locking:
     dependencies:
@@ -606,10 +609,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/core/i18n:
     devDependencies:
@@ -618,7 +621,7 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
 
   packages/core/tarball:
     dependencies:
@@ -649,10 +652,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/core/types:
     dependencies:
@@ -690,10 +693,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/hooks:
     dependencies:
@@ -730,10 +733,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/loaders:
     dependencies:
@@ -770,10 +773,10 @@ importers:
         version: link:../tools/verdaccio-auth-fake-plugin
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/logger:
     dependencies:
@@ -813,10 +816,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/middleware:
     dependencies:
@@ -865,10 +868,10 @@ importers:
         version: 7.1.4(supports-color@5.5.0)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/node-api:
     dependencies:
@@ -893,10 +896,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/plugins/audit:
     dependencies:
@@ -939,10 +942,10 @@ importers:
         version: 7.1.4(supports-color@10.2.2)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/plugins/auth-memory:
     dependencies:
@@ -986,6 +989,9 @@ importers:
       apache-md5:
         specifier: 1.1.8
         version: 1.1.8
+      argon2:
+        specifier: 0.45.1
+        version: 0.45.1
       bcryptjs:
         specifier: 3.0.3
         version: 3.0.3
@@ -1016,10 +1022,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/plugins/local-storage:
     dependencies:
@@ -1059,10 +1065,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/plugins/memory:
     dependencies:
@@ -1164,7 +1170,7 @@ importers:
         version: link:../../core/i18n
       '@vitejs/plugin-react':
         specifier: 6.0.5
-        version: 6.0.5(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 6.0.5(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       country-flag-icons:
         specifier: 1.6.20
         version: 1.6.20
@@ -1200,10 +1206,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       whatwg-fetch:
         specifier: 3.6.20
         version: 3.6.20
@@ -1252,10 +1258,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/search:
     dependencies:
@@ -1292,10 +1298,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/search-indexer:
     dependencies:
@@ -1381,10 +1387,10 @@ importers:
         version: 7.1.4(supports-color@5.5.0)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/signature:
     dependencies:
@@ -1409,10 +1415,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/store:
     dependencies:
@@ -1476,10 +1482,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/tools/helpers:
     dependencies:
@@ -1516,10 +1522,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/tools/local-publish:
     devDependencies:
@@ -1559,10 +1565,10 @@ importers:
         version: 6.1.3
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/tools/verdaccio-auth-fake-plugin: {}
 
@@ -1668,13 +1674,13 @@ importers:
     devDependencies:
       '@storybook/addon-docs':
         specifier: 10.2.17
-        version: 10.2.17(@types/react@19.2.18)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 10.2.17(@types/react@19.2.18)(esbuild@0.28.2)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       '@storybook/addon-links':
         specifier: 10.2.17
         version: 10.2.17(react@19.2.8)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
       '@storybook/react-vite':
         specifier: 10.2.17
-        version: 10.2.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@5.5.0)(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 10.2.17(esbuild@0.28.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@5.5.0)(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       '@testing-library/dom':
         specifier: 10.4.1
         version: 10.4.1
@@ -1695,7 +1701,7 @@ importers:
         version: link:../core/types
       '@vitejs/plugin-react':
         specifier: 6.0.5
-        version: 6.0.5(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 6.0.5(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       cross-env:
         specifier: 10.1.0
         version: 10.1.0
@@ -1725,10 +1731,10 @@ importers:
         version: 10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       whatwg-fetch:
         specifier: 3.6.20
         version: 3.6.20
@@ -1832,10 +1838,10 @@ importers:
         version: 7.1.4(supports-color@5.5.0)
       vite:
         specifier: 8.2.2
-        version: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+        version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
 packages:
 
@@ -2873,6 +2879,10 @@ packages:
     resolution: {integrity: sha512-C2Xj8FZ0uHWeCXXqX5B4/gVFQmtSkiuOolzAgutjTfseNOHT3pUjljDZsTSxXFGgio54bCzVFqmEOUrIVk8RDA==}
     engines: {node: '>=20.0.0'}
 
+  '@phc/format@1.0.0':
+    resolution: {integrity: sha512-m7X9U6BG2+J+R1lSOdCiITLLrxm+cWlNI3HUFA92oLO77ObGNzaKdh8pMLqdZcshtkKuV84olNNXDfMc4FezBQ==}
+    engines: {node: '>=10'}
+
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
@@ -3599,6 +3609,10 @@ packages:
 
   arg@4.1.3:
     resolution: {integrity: sha512-58S9QDqG0Xx27YwPSt9fJxivjYl432YCwfDMfZ+71RAqUrZef7LrKQZ3LHLOwCS4FLNBplP533Zx895SeOCHvA==}
+
+  argon2@0.45.1:
+    resolution: {integrity: sha512-skm+/WCjkGqCQxF7FG1LuZXM5yvbFjgbfiCGsud2oLgaDhh6b6dbH0b1EkghbM+xx4Bj8Ape+KKgixoIlWZicQ==}
+    engines: {node: '>=16.17.0'}
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
@@ -5311,6 +5325,10 @@ packages:
     resolution: {integrity: sha512-o2zOYiCpzRqSzPj0Zt/dQ/DqZeYoaQ7TUonc/xUPjCGl9WeHpNbxgVvOquXYAaJzI0M9BXV3HTzG0p8IUAbBTQ==}
     engines: {node: '>= 10.13'}
 
+  node-addon-api@8.9.2:
+    resolution: {integrity: sha512-VijLXbi3UACN69I0JVXJsX4tjACjNoQDgv2gTF6sx2wWEi8tkSg2eX8p5gSIFi8z2+DL3oHmY6OyKce38SDolg==}
+    engines: {node: ^18 || ^20 || >= 21}
+
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
@@ -5319,6 +5337,10 @@ packages:
     peerDependenciesMeta:
       encoding:
         optional: true
+
+  node-gyp-build@4.8.4:
+    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
+    hasBin: true
 
   node-mocks-http@1.14.1:
     resolution: {integrity: sha512-mfXuCGonz0A7uG1FEjnypjm34xegeN5+HI6xeGhYKecfgaZhjsmYoLE9LEFmT+53G1n8IuagPZmVnEL/xNsFaA==}
@@ -7200,11 +7222,11 @@ snapshots:
     dependencies:
       minipass: 7.1.3
 
-  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.4(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))':
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.4(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       glob: 13.0.6
       react-docgen-typescript: 2.2.2(typescript@7.0.2)
-      vite: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
     optionalDependencies:
       typescript: 7.0.2
 
@@ -7616,6 +7638,8 @@ snapshots:
       tslib: 2.8.1
       tsyringe: 4.10.0
 
+  '@phc/format@1.0.0': {}
+
   '@pinojs/redact@0.4.0': {}
 
   '@pnpm/deps.graph-sequencer@1100.0.1': {}
@@ -7703,10 +7727,10 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
-  '@storybook/addon-docs@10.2.17(@types/react@19.2.18)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))':
+  '@storybook/addon-docs@10.2.17(@types/react@19.2.18)(esbuild@0.28.2)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@mdx-js/react': 3.1.0(@types/react@19.2.18)(react@19.2.8)
-      '@storybook/csf-plugin': 10.2.17(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+      '@storybook/csf-plugin': 10.2.17(esbuild@0.28.2)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       '@storybook/icons': 2.0.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@storybook/react-dom-shim': 10.2.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
       react: 19.2.8
@@ -7727,23 +7751,24 @@ snapshots:
     optionalDependencies:
       react: 19.2.8
 
-  '@storybook/builder-vite@10.2.17(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))':
+  '@storybook/builder-vite@10.2.17(esbuild@0.28.2)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
-      '@storybook/csf-plugin': 10.2.17(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+      '@storybook/csf-plugin': 10.2.17(esbuild@0.28.2)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       storybook: 10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       ts-dedent: 2.2.0
-      vite: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
     transitivePeerDependencies:
       - esbuild
       - rollup
       - webpack
 
-  '@storybook/csf-plugin@10.2.17(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))':
+  '@storybook/csf-plugin@10.2.17(esbuild@0.28.2)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       storybook: 10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       unplugin: 2.3.11
     optionalDependencies:
-      vite: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+      esbuild: 0.28.2
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
 
   '@storybook/global@5.0.0': {}
 
@@ -7758,11 +7783,11 @@ snapshots:
       react-dom: 19.2.8(react@19.2.8)
       storybook: 10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
 
-  '@storybook/react-vite@10.2.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@5.5.0)(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))':
+  '@storybook/react-vite@10.2.17(esbuild@0.28.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@5.5.0)(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
-      '@joshwooding/vite-plugin-react-docgen-typescript': 0.6.4(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+      '@joshwooding/vite-plugin-react-docgen-typescript': 0.6.4(typescript@7.0.2)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       '@rollup/pluginutils': 5.3.0
-      '@storybook/builder-vite': 10.2.17(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+      '@storybook/builder-vite': 10.2.17(esbuild@0.28.2)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
       '@storybook/react': 10.2.17(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@5.5.0)(typescript@7.0.2)
       empathic: 2.0.0
       magic-string: 0.30.21
@@ -7772,7 +7797,7 @@ snapshots:
       resolve: 1.22.10
       storybook: 10.2.17(@testing-library/dom@10.4.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       tsconfig-paths: 4.2.0
-      vite: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
     transitivePeerDependencies:
       - esbuild
       - rollup
@@ -8131,10 +8156,10 @@ snapshots:
 
   '@verdaccio/registry-cli@1.1.0': {}
 
-  '@vitejs/plugin-react@6.0.5(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))':
+  '@vitejs/plugin-react@6.0.5(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
 
   '@vitest/coverage-v8@4.1.10(vitest@4.1.11)':
     dependencies:
@@ -8148,7 +8173,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))
+      vitest: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -8166,6 +8191,15 @@ snapshots:
       '@vitest/utils': 4.1.11
       chai: 6.2.2
       tinyrainbow: 3.1.0
+
+  '@vitest/mocker@4.1.11(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))':
+    dependencies:
+      '@vitest/spy': 4.1.11
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      msw: 2.12.10(@types/node@24.13.3)(typescript@7.0.2)
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
 
   '@vitest/mocker@4.1.11(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
@@ -8287,6 +8321,13 @@ snapshots:
   arch@2.2.0: {}
 
   arg@4.1.3: {}
+
+  argon2@0.45.1:
+    dependencies:
+      '@phc/format': 1.0.0
+      cross-env: 10.1.0
+      node-addon-api: 8.9.2
+      node-gyp-build: 4.8.4
 
   argparse@2.0.1: {}
 
@@ -10189,9 +10230,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  node-addon-api@8.9.2: {}
+
   node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
+
+  node-gyp-build@4.8.4: {}
 
   node-mocks-http@1.14.1:
     dependencies:
@@ -11467,6 +11512,20 @@ snapshots:
       unist-util-stringify-position: 4.0.0
       vfile-message: 4.0.2
 
+  vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0):
+    dependencies:
+      lightningcss: 1.33.0
+      picomatch: 4.0.5
+      postcss: 8.5.26
+      rolldown: 1.2.5
+      tinyglobby: 0.2.17
+    optionalDependencies:
+      '@types/node': 24.13.3
+      esbuild: 0.28.2
+      fsevents: 2.3.3
+      tsx: 4.22.4
+      yaml: 2.9.0
+
   vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.33.0
@@ -11479,6 +11538,35 @@ snapshots:
       fsevents: 2.3.3
       tsx: 4.22.4
       yaml: 2.9.0
+
+  vitest@4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)):
+    dependencies:
+      '@vitest/expect': 4.1.11
+      '@vitest/mocker': 4.1.11(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0))
+      '@vitest/pretty-format': 4.1.11
+      '@vitest/runner': 4.1.11
+      '@vitest/snapshot': 4.1.11
+      '@vitest/spy': 4.1.11
+      '@vitest/utils': 4.1.11
+      es-module-lexer: 2.1.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.5
+      std-env: 4.1.0
+      tinybench: 2.9.0
+      tinyexec: 1.3.0
+      tinyglobby: 0.2.17
+      tinyrainbow: 3.1.0
+      vite: 8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(tsx@4.22.4)(yaml@2.9.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 24.13.3
+      '@vitest/coverage-v8': 4.1.10(vitest@4.1.11)
+      jsdom: 29.1.1(@noble/hashes@2.2.0)
+    transitivePeerDependencies:
+      - msw
 
   vitest@4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.10)(jsdom@29.1.1(@noble/hashes@2.2.0))(msw@2.12.10(@types/node@24.13.3)(typescript@7.0.2))(vite@8.2.2(@types/node@24.13.3)(tsx@4.22.4)(yaml@2.9.0)):
     dependencies:

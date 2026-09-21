@@ -1,4 +1,5 @@
 import md5 from 'apache-md5';
+import argon2 from 'argon2';
 import bcrypt from 'bcryptjs';
 import buildDebug from 'debug';
 import createError, { type HttpError } from 'http-errors';
@@ -12,6 +13,14 @@ import crypt3 from './crypt3';
 
 const debug = buildDebug('verdaccio:plugin:htpasswd:utils');
 export const DEFAULT_BCRYPT_ROUNDS = 10;
+// OWASP password storage: argon2id, 19 MiB, 2 iterations, 1 lane
+const ARGON2ID_OPTIONS = {
+  // 2 is argon2id
+  type: 2 as const,
+  memoryCost: 19456,
+  timeCost: 2,
+  parallelism: 1,
+};
 
 type HtpasswdHashAlgorithm = constants.HtpasswdHashAlgorithm;
 
@@ -57,6 +66,8 @@ export function parseHTPasswd(input: string): Record<string, any> {
 export async function verifyPassword(passwd: string, hash: string): Promise<boolean> {
   if (hash.match(/^\$2([aby])\$/)) {
     return await bcrypt.compare(passwd, hash);
+  } else if (hash.startsWith('$argon2id$')) {
+    return await argon2.verify(hash, passwd);
   } else if (hash.indexOf('{PLAIN}') === 0) {
     return passwd === hash.slice(7);
   } else if (hash.indexOf('{SHA}') === 0) {
@@ -90,6 +101,9 @@ export async function generateHtpasswdLine(
   switch (hashConfig.algorithm) {
     case constants.HtpasswdHashAlgorithm.bcrypt:
       hash = await bcrypt.hash(passwd, hashConfig.rounds || DEFAULT_BCRYPT_ROUNDS);
+      break;
+    case constants.HtpasswdHashAlgorithm.argon2id:
+      hash = await argon2.hash(passwd, ARGON2ID_OPTIONS);
       break;
     case constants.HtpasswdHashAlgorithm.crypt:
       hash = crypt3(passwd);
@@ -151,7 +165,8 @@ export async function sanityCheck(
   password: string,
   verifyFn: Callback,
   users: {},
-  maxUsers: number
+  maxUsers: number,
+  bootstrap = false
 ): Promise<HttpError | null> {
   let err;
 
@@ -165,7 +180,14 @@ export async function sanityCheck(
 
   const hash = users[user];
 
-  if (maxUsers < 0) {
+  if (bootstrap && Object.keys(users).length > 0) {
+    debug('bootstrap refused because an account already exists');
+    err = Error('an admin account already exists');
+    err.status = HTTP_STATUS.CONFLICT;
+    return err;
+  }
+
+  if (maxUsers < 0 && !bootstrap) {
     debug('registration is disabled');
     err = Error(API_ERROR.REGISTRATION_DISABLED);
     err.status = HTTP_STATUS.CONFLICT;
@@ -184,7 +206,7 @@ export async function sanityCheck(
     err = Error(API_ERROR.UNAUTHORIZED_ACCESS);
     err.status = HTTP_STATUS.UNAUTHORIZED;
     return err;
-  } else if (Object.keys(users).length >= maxUsers) {
+  } else if (!bootstrap && Object.keys(users).length >= maxUsers) {
     debug('maximum amount of users reached');
     err = Error(API_ERROR.MAX_USERS_REACHED);
     err.status = HTTP_STATUS.FORBIDDEN;

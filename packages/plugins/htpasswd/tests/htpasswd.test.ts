@@ -56,7 +56,7 @@ describe('HTPasswd', () => {
       const invalidConfig = { algorithm: 'invalid', ...config } as HTPasswdConfig;
       new HTPasswd(invalidConfig, emptyPluginOptions);
       expect(warn).toHaveBeenCalledWith(
-        'The algorithm selected %s is invalid, switching to to default one "bcrypt", password validation can be affected',
+        'The algorithm selected %s is invalid, switching to to default one "argon2id", password validation can be affected',
         'invalid'
       );
       expect(info).toHaveBeenCalled();
