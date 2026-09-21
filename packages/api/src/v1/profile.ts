@@ -161,7 +161,7 @@ export default function (
         });
       }
 
-      const { password, tfa } = req.body;
+      const { password, tfa } = req.body ?? {};
       const { name } = req.remote_user;
 
       if (isNil(password) === false) {

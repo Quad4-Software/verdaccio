@@ -109,7 +109,7 @@ export default function (
     USER_API_ENDPOINTS.add_user,
     rateLimit(config?.userRateLimit),
     function (req: $RequestExtend, res: Response, next: $NextFunctionVer): void {
-      const { name, password } = req.body;
+      const { name, password } = req.body ?? {};
       debug('login or adduser');
       const remoteName = req?.remote_user?.name;
 

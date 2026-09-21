@@ -44,6 +44,9 @@ export function validateName(name: string): boolean {
   return !(
     !normalizedName.match(/^[-a-zA-Z0-9_.!~*'()@]+$/) ||
     normalizedName.startsWith('.') || // ".bin", etc.
+    // npm caps package names at 214 characters; longer names also cannot be
+    // stored by filesystems with a 255-byte component limit
+    normalizedName.length > 214 ||
     ['node_modules', '__proto__', 'favicon.ico'].includes(normalizedName)
   );
 }

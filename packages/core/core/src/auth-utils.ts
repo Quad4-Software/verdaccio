@@ -36,7 +36,8 @@ export function buildToken(type: string, token: string): string {
  * $anonymous work because remote users carry them in groups.
  */
 export function isUserInGroups(user: RemoteUser, groupsList: string[]): boolean {
-  return groupsList.some((group) => user.name === group || user.groups.includes(group));
+  const groups = Array.isArray(user?.groups) ? user.groups : [];
+  return groupsList.some((group) => user?.name === group || groups.includes(group));
 }
 
 /**

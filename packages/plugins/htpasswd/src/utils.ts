@@ -178,7 +178,9 @@ export async function sanityCheck(
     return err;
   }
 
-  const hash = users[user];
+  // hasOwnProperty: a plain lookup on '__proto__' or 'constructor' would find
+  // Object.prototype members and pass a non-string to verifyFn
+  const hash = Object.prototype.hasOwnProperty.call(users, user) ? users[user] : undefined;
 
   if (bootstrap && Object.keys(users).length > 0) {
     debug('bootstrap refused because an account already exists');

@@ -30,7 +30,7 @@ function addUserAuthApi(auth: Auth, config: Config, storage: Storage): Router {
     WebUrls.user_login,
     rateLimit(config?.userRateLimit),
     function (req: Request, res: Response, next: $NextFunctionVer): void {
-      const { username, password } = req.body;
+      const { username, password } = req.body ?? {};
       debug('authenticate %o', username);
       auth.authenticate(
         username,
@@ -65,7 +65,7 @@ function addUserAuthApi(auth: Auth, config: Config, storage: Storage): Router {
       WebUrls.user_signup,
       rateLimit(config?.userRateLimit),
       function (req: Request, res: Response, next: $NextFunctionVer): void {
-        const { name, password, email, sessionId } = req.body;
+        const { name, password, email, sessionId } = req.body ?? {};
         debug('login or adduser');
 
         // TOOD: reuse with login.ts file
@@ -151,7 +151,7 @@ function addUserAuthApi(auth: Auth, config: Config, storage: Storage): Router {
           });
         }
 
-        const { password } = req.body;
+        const { password } = req.body ?? {};
         const { name } = req.remote_user;
 
         if (

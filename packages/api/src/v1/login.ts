@@ -119,7 +119,7 @@ export default function (
     LOGIN_API_ENDPOINTS.login_cli_session,
     rateLimit(config?.userRateLimit),
     async function (req: $RequestExtend, res: Response, next: $NextFunctionVer): Promise<void> {
-      const { username, password } = req.body;
+      const { username, password } = req.body ?? {};
       const sessionId = reqUtils.paramToString(req.params.sessionId);
       debug('authenticating login session %o for user %o', sessionId, username);
 

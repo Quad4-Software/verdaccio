@@ -57,6 +57,14 @@ describe('Local FS test', () => {
     });
   });
 
+  describe('readPackage() group', () => {
+    test('a name the filesystem cannot hold is a not found, not an internal error', async () => {
+      fs.mkdirSync(localTempStorage, { recursive: true });
+      const localFs = new LocalDriver(path.join(localTempStorage, 'a'.repeat(300)), logger);
+      await expect(localFs.readPackage('name')).rejects.toMatchObject({ status: 404 });
+    });
+  });
+
   describe('removePackage() group', () => {
     beforeEach(() => {
       fs.mkdirSync(path.join(localTempStorage, '_toDelete'), { recursive: true });

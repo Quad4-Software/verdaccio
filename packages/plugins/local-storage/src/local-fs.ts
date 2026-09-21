@@ -201,6 +201,11 @@ export default class LocalFS implements ILocalFSPackageManager {
       debug('read storage file %o has succeeded', name);
       return data;
     } catch (err: any) {
+      // a name the filesystem cannot hold does not exist; report it like
+      // ENOENT so callers answer 404 instead of a 500
+      if (err.code === 'ENAMETOOLONG' || err.code === 'ENOTDIR') {
+        throw errorUtils.getNotFound();
+      }
       if (err.code !== noSuchFile) {
         debug('parse error');
         this.logger.error({ err, name }, 'error on parse @{name}: @{err.message}');

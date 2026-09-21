@@ -152,7 +152,11 @@ export default class HTPasswd
         debug('error %o', err);
         return cb(err.code === 'ENOENT' ? null : err);
       }
-      if (!this.users[user]) {
+      // hasOwnProperty: '__proto__' and friends resolve to Object.prototype
+      const hash = Object.prototype.hasOwnProperty.call(this.users, user)
+        ? this.users[user]
+        : undefined;
+      if (typeof hash !== 'string') {
         debug('user %s not found', user);
         return cb(null, false);
       }
@@ -160,7 +164,7 @@ export default class HTPasswd
       let passwordValid = false;
       try {
         const start = new Date();
-        passwordValid = await verifyPassword(password, this.users[user]);
+        passwordValid = await verifyPassword(password, hash);
         const durationMs = new Date().getTime() - start.getTime();
         if (durationMs > this.slowVerifyMs) {
           debug('password for user "%s" took %sms to verify', user, durationMs);
@@ -250,7 +254,7 @@ export default class HTPasswd
       if (err && err.code !== 'ENOENT') {
         return realCb(err);
       }
-      if (!this.users[user]) {
+      if (!Object.prototype.hasOwnProperty.call(this.users, user)) {
         return realCb(Error(`Unable to set admin flag for user '${user}': user does not exist`));
       }
       try {

@@ -401,6 +401,9 @@ importers:
       '@verdaccio/types':
         specifier: workspace:14.0.0-next-9.14
         version: link:../core/types
+      fast-check:
+        specifier: 4.10.0
+        version: 4.10.0
       mockdate:
         specifier: 3.0.5
         version: 3.0.5
@@ -542,6 +545,9 @@ importers:
       '@types/lodash-es':
         specifier: 4.17.12
         version: 4.17.12
+      fast-check:
+        specifier: 4.10.0
+        version: 4.10.0
       rimraf:
         specifier: 6.1.3
         version: 6.1.3
@@ -582,6 +588,9 @@ importers:
       express:
         specifier: 5.2.1
         version: 5.2.1(supports-color@10.2.2)
+      fast-check:
+        specifier: 4.10.0
+        version: 4.10.0
       rimraf:
         specifier: 6.1.3
         version: 6.1.3
@@ -1014,6 +1023,9 @@ importers:
       '@verdaccio/types':
         specifier: workspace:14.0.0-next-9.14
         version: link:../../core/types
+      fast-check:
+        specifier: 4.10.0
+        version: 4.10.0
       mockdate:
         specifier: 3.0.5
         version: 3.0.5
@@ -4398,6 +4410,10 @@ packages:
     resolution: {integrity: sha512-11Ndz7Nv+mvAC1j0ktTa7fAb0vLyGGX+rMHNBYQviQDGU0Hw7lhctJANqbPhu9nV9/izT/IntTgZ7Im/9LJs9g==}
     engines: {'0': node >=0.6.0}
 
+  fast-check@4.10.0:
+    resolution: {integrity: sha512-hhqQL+IJllZi3aM4TKvmCj3bywLEcycNTTLZeLhA9ttMxBrCqM07q7Di4kl+j9EWSTXvJH1+EpIgsDbF/+8H5Q==}
+    engines: {node: '>=12.17.0'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -5727,6 +5743,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pure-rand@8.4.2:
+    resolution: {integrity: sha512-vvuOGgcuPJAirlHvuQw1TrOiw7ptaIXXmIbNuiNOY6lNGJJH49PQ1Kj4nd783nPdQhQdicgOjVI2yI/9BD6/Ng==}
 
   pvtsutils@1.3.6:
     resolution: {integrity: sha512-PLgQXQ6H2FWCaeRak8vvk1GW462lMxB5s3Jm673N82zI4vqtVUPuZdffdZbPDFRoU8kAhItWFtPCWiPpp4/EDg==}
@@ -9279,6 +9298,10 @@ snapshots:
 
   extsprintf@1.3.0: {}
 
+  fast-check@4.10.0:
+    dependencies:
+      pure-rand: 8.4.2
+
   fast-deep-equal@3.1.3: {}
 
   fast-fifo@1.3.2: {}
@@ -10716,6 +10739,8 @@ snapshots:
   punycode.js@2.3.1: {}
 
   punycode@2.3.1: {}
+
+  pure-rand@8.4.2: {}
 
   pvtsutils@1.3.6:
     dependencies:
