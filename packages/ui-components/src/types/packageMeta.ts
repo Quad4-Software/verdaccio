@@ -48,6 +48,7 @@ export interface PackageMetaInterface {
   time?: Time;
   latest: Latest;
   _uplinks?: Record<string, { fetched: number }>;
+  visibility?: 'public' | 'private';
 }
 
 export interface Developer {

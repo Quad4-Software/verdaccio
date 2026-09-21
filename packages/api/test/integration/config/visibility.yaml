@@ -1,0 +1,29 @@
+storage: ./storage
+
+auth:
+  htpasswd:
+    file: ./htpasswd-visibility
+
+web:
+  enable: true
+  title: verdaccio
+
+publish:
+  allow_offline: false
+
+uplinks:
+
+log: { type: stdout, format: pretty, level: trace }
+
+packages:
+  'hidden-*':
+    access: $all
+    publish: maintainer
+    visibility: maintainer
+  'locked-*':
+    access: $all
+    publish: maintainer
+  '**':
+    access: $anonymous
+    publish: $anonymous
+_debug: true

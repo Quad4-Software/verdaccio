@@ -25,6 +25,8 @@ type PrivatePackage = {
   verdaccioPrivate?: boolean;
   // if the package is not private but is cached
   verdaccioPkgCached?: boolean;
+  // packument-level visibility flag, only local packages can carry it
+  visibility?: string;
 };
 
 export interface SearchItem extends UnStable, PrivatePackage {

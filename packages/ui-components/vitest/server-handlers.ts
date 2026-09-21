@@ -10,6 +10,7 @@ import {
   mockSearch,
   mockSidebar,
   mockTarball,
+  mockVisibilityUpdate,
 } from './msw-utils';
 
 export const handlers = [
@@ -32,6 +33,7 @@ export const handlers = [
   mockTarball(),
   mockOidcConfig(),
   ...mockProfile(),
+  mockVisibilityUpdate(),
   // Error presets
   mockSidebar('JSONStream', null, 401),
   mockSidebar('kleur', null, 404),

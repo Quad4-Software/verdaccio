@@ -10,6 +10,7 @@ import {
   WebUrls,
   getRequestOptions,
 } from '@verdaccio/middleware';
+import { assertManifestVisibility } from '@verdaccio/store';
 import type { Storage } from '@verdaccio/store';
 import { convertDistRemoteToLocalTarballUrls } from '@verdaccio/tarball';
 import type { Config, Manifest, WebManifest } from '@verdaccio/types';
@@ -43,6 +44,7 @@ function addSidebarWebApi(config: Config, storage: Storage, auth: Auth): Router 
           keepUpLinkData: true,
           requestOptions,
         })) as Manifest;
+        await assertManifestVisibility(auth, info, req.remote_user);
         const { v } = req.query;
         // `v` may be a version or a dist-tag; anything else is a 404
         let requestedVersion: string | undefined;

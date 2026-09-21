@@ -80,6 +80,11 @@ export function normalisePackageAccess(packages: LegacyPackageList): LegacyPacka
       normalizedPkgs[pkg].stage = isUndefined(packageAccess.stage)
         ? false
         : normalizeUserList(packageAccess.stage);
+      // visibility stays undefined when unset so callers can tell it apart
+      // from an explicitly empty list
+      normalizedPkgs[pkg].visibility = isUndefined(packageAccess.visibility)
+        ? undefined
+        : normalizeUserList(packageAccess.visibility);
     }
   }
 

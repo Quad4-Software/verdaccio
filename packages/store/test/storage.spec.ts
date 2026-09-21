@@ -2333,7 +2333,14 @@ describe('storage', () => {
         expect(manifest._id).not.toBeDefined();
         // @ts-expect-error
         expect(manifest._rev).not.toBeDefined();
-        expect(Object.keys(manifest)).toEqual(['name', DIST_TAGS, 'versions', 'modified', 'time']);
+        expect(Object.keys(manifest)).toEqual([
+          'name',
+          DIST_TAGS,
+          'versions',
+          'modified',
+          'time',
+          'visibility',
+        ]);
       });
     });
   });

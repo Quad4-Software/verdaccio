@@ -3,7 +3,7 @@ import { isNil } from 'lodash-es';
 
 import { createAnonymousRemoteUser } from '@verdaccio/config';
 import type { pluginUtils } from '@verdaccio/core';
-import { API_ERROR, HTTP_STATUS, TOKEN_BEARER, errorUtils } from '@verdaccio/core';
+import { API_ERROR, HTTP_STATUS, TOKEN_BEARER, authUtils, errorUtils } from '@verdaccio/core';
 import { aesDecrypt, parseBasicPayload, verifyPayload } from '@verdaccio/signature';
 import type { AuthPackageAllow, Config, Logger, RemoteUser, Security } from '@verdaccio/types';
 
@@ -174,9 +174,7 @@ export function allow_action(action: ActionsAllowed, logger: Logger): AllowActio
     debug('allow_action "%s": groups %s', action, groups);
     const groupAccess = pkg[action] as string[];
     debug('allow_action "%s": groupAccess %s', action, groupAccess);
-    const hasPermission = groupAccess.some((group) => {
-      return name === group || groups.includes(group);
-    });
+    const hasPermission = authUtils.isUserInGroups(user, groupAccess);
     debug('package "%s" has permission "%s"', name, hasPermission);
     logger.trace(
       { pkgName: pkg.name, hasPermission, remote: user.name, groupAccess },

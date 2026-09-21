@@ -287,6 +287,14 @@ class Auth implements IAuthMiddleware, TokenEncryption, pluginUtils.IBasicAuth {
       authUtils.getMatchedPackagesSpec(packageName, this.config.packages)
     ) as AllowAccess & PackageAccess;
 
+    // a packages rule can hide a package entirely: users outside the
+    // visibility list get a 404 instead of an access error, and listings drop
+    // the package because this error is a 4xx
+    if (Array.isArray(pkg.visibility) && !authUtils.isUserInGroups(user, pkg.visibility)) {
+      debug('user %o outside the visibility list of package %o', user.name, packageName);
+      return callback(errorUtils.getNotFound());
+    }
+
     debug('check access permissions for user %o to package %o', user.name, packageName);
 
     // Use const instead of function declaration so we can use this.logger

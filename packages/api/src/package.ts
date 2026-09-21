@@ -4,7 +4,7 @@ import type { Router } from 'express';
 import type { Auth } from '@verdaccio/auth';
 import { HEADERS, HEADER_TYPE, reqUtils, stringUtils } from '@verdaccio/core';
 import { PACKAGE_API_ENDPOINTS, allow, getRequestOptions } from '@verdaccio/middleware';
-import { Storage } from '@verdaccio/store';
+import { Storage, assertPackageVisibility } from '@verdaccio/store';
 import type { Logger } from '@verdaccio/types';
 
 import type { $NextFunctionVer, $RequestExtend, $ResponseExtend } from '../types/custom';
@@ -34,6 +34,7 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
       const requestOptions = getRequestOptions(req);
 
       try {
+        await assertPackageVisibility(auth, storage, name, req.remote_user);
         const manifest = await storage.getPackageByOptions({
           name,
           uplinksLook: true,
@@ -64,6 +65,7 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
       const filename = reqUtils.paramToString(req.params.filename);
       const abort = new AbortController();
       try {
+        await assertPackageVisibility(auth, storage, pkgName, req.remote_user);
         debug('downloading tarball %o', filename);
         const stream = (await storage.getTarball(pkgName, filename, {
           signal: abort.signal,

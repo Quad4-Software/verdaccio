@@ -327,6 +327,53 @@ describe('AuthTest', () => {
         expect(callback).toHaveBeenCalledTimes(1);
         expect(callback).toHaveBeenCalledWith(null, true);
       });
+
+      test('should answer not found when the user is outside the visibility list', async () => {
+        const config: Config = new AppConfig({
+          ...authProfileConf,
+          packages: {
+            'hidden-*': { access: '$all', publish: 'dev', visibility: 'team1' },
+            '**': { access: '$all', publish: '$authenticated' },
+          },
+        });
+        config.checkSecretKey(TEST_SECRET);
+        const auth: Auth = new Auth(config, logger);
+        await auth.init();
+
+        const callback = vi.fn();
+        auth.allow_access(
+          { packageName: 'hidden-pkg' },
+          { name: 'foo', groups: [ROLES.$ALL], real_groups: [] },
+          callback
+        );
+
+        expect(callback).toHaveBeenCalledTimes(1);
+        expect(callback).toHaveBeenCalledWith(errorUtils.getNotFound());
+      });
+
+      test('should evaluate access normally when the user is inside the visibility list', async () => {
+        const config: Config = new AppConfig({
+          ...authProfileConf,
+          packages: {
+            'hidden-*': { access: '$all', publish: 'dev', visibility: 'team1' },
+            '**': { access: '$all', publish: '$authenticated' },
+          },
+        });
+        config.checkSecretKey(TEST_SECRET);
+        const auth: Auth = new Auth(config, logger);
+        await auth.init();
+
+        const callback = vi.fn();
+        auth.allow_access(
+          { packageName: 'hidden-pkg' },
+          { name: 'member', groups: ['team1', ROLES.$ALL], real_groups: ['team1'] },
+          callback
+        );
+
+        expect(callback).toHaveBeenCalledTimes(1);
+        // access: $all grants the member, no 404 masking applies
+        expect(callback).toHaveBeenCalledWith(null, true);
+      });
     });
   });
 

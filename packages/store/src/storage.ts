@@ -164,6 +164,23 @@ class Storage {
     });
   }
 
+  /**
+   * Set or clear the packument visibility flag. Anything other than "private"
+   * clears the flag so the manifest stays clean.
+   */
+  public async setPackageVisibility(name: string, visibility: 'private' | 'public'): Promise<void> {
+    debug('set package %o visibility %o', name, visibility);
+    await this.updatePackage(name, async (data: Manifest): Promise<Manifest> => {
+      const updated: Manifest = { ...data };
+      if (visibility === 'private') {
+        updated.visibility = 'private';
+      } else {
+        delete updated.visibility;
+      }
+      return updated;
+    });
+  }
+
   public async removePackage(name: string, revision: string, username: string): Promise<void> {
     debug('remove package %o', name);
     await this.removePackageByRevision(name, revision, username);
@@ -659,6 +676,8 @@ class Storage {
       modified: manifest.time.modified,
       // NOTE: special case for pnpm https://github.com/pnpm/rfcs/pull/2
       time: manifest.time,
+      // keep the flag so visibility checks also work on abbreviated responses
+      visibility: manifest.visibility,
     };
 
     return convertedManifest;
@@ -707,6 +726,7 @@ class Storage {
         // Add for stars api
         // @ts-ignore
         version.users = filteredManifest.users;
+        version.visibility = filteredManifest.visibility;
         // Remove readmes for packages list (which might exist with keep_readmes config)
         version.readme = '';
 
@@ -844,6 +864,7 @@ class Storage {
             debug('search local stream found %o', searchPackage.name);
             const searchPackageItem: searchUtils.SearchPackageItem = {
               package: searchPackage,
+              visibility: filteredManifest.visibility,
               score: searchItem.score,
               verdaccioPkgCached: searchItem.verdaccioPkgCached,
               verdaccioPrivate: searchItem.verdaccioPrivate,

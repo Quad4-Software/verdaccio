@@ -10,6 +10,7 @@ import {
   WebUrls,
   getRequestOptions,
 } from '@verdaccio/middleware';
+import { assertManifestVisibility } from '@verdaccio/store';
 import type { Storage } from '@verdaccio/store';
 import type { Config, Manifest } from '@verdaccio/types';
 
@@ -75,6 +76,7 @@ function addReadmeWebApi(storage: Storage, auth: Auth, config: Config): Router {
           abbreviated: false,
           requestOptions,
         })) as Manifest;
+        await assertManifestVisibility(auth, manifest, req.remote_user);
         debug('readme pkg %o', manifest?.name);
         // TODO: sanitize query
         const { v } = req.query;

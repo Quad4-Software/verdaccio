@@ -57,6 +57,11 @@ export interface PackageAccessYaml {
    * release from making one.
    */
   stage?: string;
+  /**
+   * Groups allowed to see the package exists. When set, users outside the
+   * list get a 404 on reads and the package is hidden from listings.
+   */
+  visibility?: string;
 }
 
 export interface Headers {

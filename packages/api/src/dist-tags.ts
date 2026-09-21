@@ -3,6 +3,7 @@ import type { RequestHandler, Router } from 'express';
 import type { Auth } from '@verdaccio/auth';
 import { HEADERS, constants, errorUtils, reqUtils } from '@verdaccio/core';
 import { DIST_TAGS_API_ENDPOINTS, allow, getRequestOptions, media } from '@verdaccio/middleware';
+import { assertPackageVisibility } from '@verdaccio/store';
 import type { Storage } from '@verdaccio/store';
 import type { Logger } from '@verdaccio/types';
 
@@ -96,6 +97,7 @@ export default function (
       const packageName = reqUtils.paramToString(req.params.package);
       const requestOptions = getRequestOptions(req);
       try {
+        await assertPackageVisibility(auth, storage, packageName, req.remote_user);
         const manifest = await storage.getPackageByOptions({
           name: packageName,
           uplinksLook: true,

@@ -125,6 +125,14 @@
       "size": "Size",
       "file-count": "File Count"
     },
+    "visibility": {
+      "title": "Visibility",
+      "public": "public",
+      "private": "private",
+      "make-private": "Make private",
+      "make-public": "Make public",
+      "error": "Could not update package visibility"
+    },
     "keywords": {
       "title": "Keywords"
     },

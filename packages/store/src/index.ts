@@ -6,3 +6,4 @@ export * from './lib/storage-utils';
 export * from './lib/versions-utils';
 export * from './lib/publish-utils';
 export * from './type';
+export * from './visibility';

@@ -2,7 +2,7 @@ import type { Auth } from '@verdaccio/auth';
 import type { searchUtils } from '@verdaccio/core';
 import { HTTP_STATUS, errorUtils } from '@verdaccio/core';
 import { SEARCH_API_ENDPOINTS, rateLimit } from '@verdaccio/middleware';
-import type { Storage } from '@verdaccio/store';
+import { type Storage, canPublish } from '@verdaccio/store';
 import type { Config, Logger } from '@verdaccio/types';
 
 const DEFAULT_SIZE = 20;
@@ -43,19 +43,28 @@ export default function (
     remoteUser
   ): Promise<searchUtils.SearchPackageItem | null> {
     return new Promise((resolve, reject) => {
-      auth.allow_access({ packageName: pkg?.package?.name }, remoteUser, function (err, allowed) {
-        if (err) {
-          if (err.status && String(err.status).match(/^4\d\d$/)) {
-            // auth plugin returns 4xx user error,
-            // that's equivalent of !allowed basically
+      auth.allow_access(
+        { packageName: pkg?.package?.name },
+        remoteUser,
+        async function (err, allowed) {
+          if (err) {
+            if (err.status && String(err.status).match(/^4\d\d$/)) {
+              // auth plugin returns 4xx user error,
+              // that's equivalent of !allowed basically
+              return resolve(null);
+            } else {
+              reject(err);
+            }
+          } else if (!allowed) {
             return resolve(null);
+          } else if (pkg?.visibility === 'private') {
+            // a private package is only listed for users allowed to publish it
+            return resolve((await canPublish(auth, pkg.package.name, remoteUser)) ? pkg : null);
           } else {
-            reject(err);
+            return resolve(pkg);
           }
-        } else {
-          return resolve(allowed ? pkg : null);
         }
-      });
+      );
     });
   }
 

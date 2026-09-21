@@ -9,6 +9,7 @@ import search from './search';
 import setup from './setup';
 import sidebar from './sidebar';
 import user from './user';
+import visibility from './visibility';
 
 export default (auth, storage, config) => {
   const route = Router(); /* eslint new-cap: 0 */
@@ -24,6 +25,7 @@ export default (auth, storage, config) => {
   route.use(WebUrlsNamespace.data, search(storage, auth));
   route.use(WebUrlsNamespace.data, sidebar(config, storage, auth));
   route.use(WebUrlsNamespace.data, readme(storage, auth, config));
+  route.use(WebUrlsNamespace.data, visibility(storage, auth, config));
   if (hasLogin(config)) {
     route.use(WebUrlsNamespace.sec, user(auth, config, storage));
     route.use(WebUrlsNamespace.sec, setup(auth, config));

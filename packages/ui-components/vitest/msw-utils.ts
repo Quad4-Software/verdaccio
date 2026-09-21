@@ -297,6 +297,22 @@ export const mockProfile = () => {
 };
 
 /**
+ * Mocks the package visibility endpoint (PUT /-/verdaccio/data/package/visibility/:package)
+ * used by the sidebar toggle.
+ */
+let lastVisibilityBody: any = null;
+export const getLastVisibilityBody = () => lastVisibilityBody;
+export const resetVisibilityMock = () => {
+  lastVisibilityBody = null;
+};
+
+export const mockVisibilityUpdate = () =>
+  http.put(`${BASE_URL}/-/verdaccio/data/package/visibility/*`, (async ({ request }) => {
+    lastVisibilityBody = await request.json();
+    return HttpResponse.json({ success: true });
+  }) as unknown as MswResolver);
+
+/**
  * Mocks the oidc plugin config endpoint (GET /-/oauth/config) that decides
  * whether the SSO button renders on the login forms.
  */

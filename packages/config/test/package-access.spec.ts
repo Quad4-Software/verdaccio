@@ -36,6 +36,22 @@ describe('Package access utilities', () => {
       expect(access['foo-*'].publish).toEqual(['reviewer']);
     });
 
+    test('should normalize visibility into a group list when it is configured', () => {
+      const access = normalisePackageAccess({
+        'foo-*': { access: '$all', publish: 'reviewer', visibility: 'team1 team2' } as any,
+      });
+
+      expect(access['foo-*'].visibility).toEqual(['team1', 'team2']);
+    });
+
+    test('should keep visibility undefined when it is not configured', () => {
+      const access = normalisePackageAccess({
+        'foo-*': { access: '$all', publish: 'reviewer' } as any,
+      });
+
+      expect(access['foo-*'].visibility).toBeUndefined();
+    });
+
     test('should define an empty publish array even if is not defined in packages', () => {
       const { packages } = parseConfigFile(parseConfigurationFile('pkgs-basic-no-publish'));
       const access = normalisePackageAccess(packages);

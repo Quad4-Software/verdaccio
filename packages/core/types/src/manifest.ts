@@ -5,6 +5,8 @@ export interface PackageAccess {
   access?: string[];
   unpublish?: string[] | boolean; // false means fallback to publish access
   stage?: string[] | boolean; // false means fallback to publish access
+  // when set, users outside these groups cannot even see the package exists (reads 404)
+  visibility?: string[];
 }
 
 export interface PackageList {
@@ -141,6 +143,8 @@ export interface Version {
   hasInstallScript?: boolean;
   cpu?: string[];
   os?: string[];
+  // packument-level flag surfaced on list summaries
+  visibility?: string;
 }
 
 export interface Dependencies {
@@ -224,6 +228,10 @@ export interface Manifest extends FullRemoteManifest, PublishManifest {
    * store the revision of the manifest
    */
   _rev: string;
+  /**
+   * private packages are only visible to users allowed to publish them
+   */
+  visibility?: 'private' | 'public';
 }
 
 export type AbbreviatedVersion = Pick<

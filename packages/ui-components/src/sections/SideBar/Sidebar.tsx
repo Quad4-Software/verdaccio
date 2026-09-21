@@ -11,6 +11,7 @@ import Install from '../../components/Install';
 import Keywords from '../../components/Keywords';
 import Repository from '../../components/Repository';
 import SideBarTitle from '../../components/SideBarTitle';
+import Visibility from '../../components/Visibility';
 import { DownloadProvider, useConfig, useVersion } from '../../providers';
 import type { ModuleType, PackageMetaInterface } from '../../types/packageMeta';
 
@@ -61,6 +62,7 @@ const DetailSidebar: React.FC = () => {
       <Dist packageMeta={packageMeta} />
       <Keywords packageMeta={packageMeta} />
       <Author packageMeta={packageMeta} />
+      <Visibility />
       <Developers packageMeta={packageMeta} type={DeveloperType.MAINTAINERS} />
       <Developers packageMeta={packageMeta} type={DeveloperType.CONTRIBUTORS} />
     </Paper>

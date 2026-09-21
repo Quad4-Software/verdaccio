@@ -13,6 +13,7 @@ import {
   getRequestOptions,
 } from '@verdaccio/middleware';
 import type { Storage } from '@verdaccio/store';
+import { canPublish } from '@verdaccio/store';
 import { getLocalRegistryTarballUri } from '@verdaccio/tarball';
 import type { Config, RemoteUser, Version } from '@verdaccio/types';
 
@@ -63,6 +64,14 @@ function addPackageWebApi(storage: Storage, auth: Auth, config: Config): Router 
       pkgCopy.author = formatAuthor(pkg.author);
       try {
         if (await checkAllow(pkg.name, req.remote_user)) {
+          const remoteUserAccess = !isLoginEnabled ? anonymousRemoteUser : req.remote_user;
+          // a private package is only listed for users allowed to publish it
+          if (
+            pkg.visibility === 'private' &&
+            (await canPublish(auth, pkg.name, remoteUserAccess)) === false
+          ) {
+            continue;
+          }
           if (config.web) {
             // @ts-ignore
             pkgCopy.author.avatar = generateGravatarUrl(pkgCopy.author.email, config.web.gravatar);
