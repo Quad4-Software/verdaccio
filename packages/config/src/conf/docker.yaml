@@ -19,21 +19,11 @@ plugins: /verdaccio/plugins
 # Web UI settings
 # https://verdaccio.org/docs/webui
 web:
-  title: Verdaccio
-  # Disable complete web UI
-  # enabled: false
-  # Custom colors for header background and font
-  # primaryColor: "#4b5e40"
-  # Custom logos and favicon
-  # logo: ./path/to/logo.png
-  # logoDark: ./path/to/logoDark.png
-  # favicon: ./path/to/favicon.ico
-  # Disable gravatar support
-  # gravatar: false
-  # By default, packages are ordered ascending
-  # sort_packages: asc | desc
-  # Convert your UI to the dark side
-  # darkMode: true
+  title: Registry
+  primaryColor: "#0A0A0B"
+  gravatar: false
+  darkMode: true
+  showThemeSwitch: true
   # html_cache: true
   # By default, all features are displayed
   # login: true
@@ -70,9 +60,9 @@ web:
 auth:
   htpasswd:
     file: /verdaccio/storage/htpasswd
-    # Maximum amount of users allowed to register, defaults to "+inf".
-    # You can set this to -1 to disable registration.
-    # max_users: 1000
+    max_users: -1
+    algorithm: argon2id
+    # rounds applies only to bcrypt
 
 # A list of other known repositories we can talk to
 # https://verdaccio.org/docs/configuration#uplinks
@@ -119,7 +109,7 @@ server:
   keepAliveTimeout: 60
   # Controls how requests with dotfile path segments (e.g. /.env, /.well-known/) are handled.
   # 'deny' returns 403, 'ignore' returns 404 (default), 'allow' passes through.
-  dotfiles: ignore
+  dotfiles: deny
   # Hide static file requests (/-/static/*) from pino logs.
   # They remain visible via DEBUG=verdaccio:middleware:log.
   # hideStaticLogs: true
@@ -251,9 +241,9 @@ log:
   type: stdout
   format: pretty
   level: http
-#  redact:
-#    paths: ['req.header.authorization','req.header.cookie','req.remoteAddress','req.remotePort','ip','remoteIP','user','msg']
-#    censor: '<redacted>'
+  redact:
+    paths: ['req.header.authorization', 'req.header.cookie', 'req.remoteAddress', 'req.remotePort']
+    censor: '<redacted>'
 #  sync: true
 
 # Feature flags (experimental settings that can be changed or removed in the future)

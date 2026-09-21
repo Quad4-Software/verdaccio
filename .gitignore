@@ -69,3 +69,6 @@ packages/ui-components/storybook-static
 # devcontainer
 /.devcontainer
 
+
+# local preview
+.preview/
