@@ -1,6 +1,9 @@
 # Contributing
 
-> This guidelines refers to the main (`master`) that host the v6.x, if you want to contribute to `5.x` please read the following [link](https://github.com/verdaccio/verdaccio/blob/5.x/CONTRIBUTING.md).
+> This repository is Quad4's fork of [Verdaccio](https://verdaccio.org). The
+> text below is the upstream contribution guide, kept for contributing changes
+> back to [verdaccio/verdaccio](https://github.com/verdaccio/verdaccio). For
+> fork-internal work, open issues and pull requests against this repository.
 
 We're happy that you're considering contributing!
 

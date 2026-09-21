@@ -1,14 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Documentation 📚
+  - name: Documentation
     url: https://verdaccio.org/docs/installation
-    about: Find more information in our documentation resources
-  - name: Feature Request 🌟
-    url: https://github.com/orgs/verdaccio/discussions/new?category=ideas
-    about: 🆕 Open a new feature request discussion 🙏
-  - name: Question 🤷🏻‍♂️
-    url: https://github.com/verdaccio/verdaccio/discussions/new?category=q-a
-    about: 🆕 Open a new Q&A discussion 🙏
-  - name: Chat 🏘
-    url: https://discord.gg/7qWJxBf
-    about: Quick question? Try out Discord chat, you can get faster feedback
+    about: Upstream Verdaccio documentation. Applies to behavior this fork has not changed.
+  - name: Upstream community
+    url: https://github.com/verdaccio/verdaccio/discussions
+    about: Questions and feature requests for upstream Verdaccio

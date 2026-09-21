@@ -1,0 +1,6 @@
+verdaccio
+
+This repository is a derivative work of Verdaccio (https://verdaccio.org),
+maintained by Quad4. It contains modifications to the original source code.
+The original MIT license and copyright notice are retained in LICENSE.
+See the git history for the full set of changes.
