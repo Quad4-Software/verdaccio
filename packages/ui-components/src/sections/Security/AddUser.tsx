@@ -109,6 +109,9 @@ const AddUser: React.FC = () => {
     [handleAddUser, setError, setUserState, navigate, t]
   );
 
+  // handleSubmit must be invoked at submit time, not during render
+  const submitForm = (event: React.BaseSyntheticEvent) => handleSubmit(onSubmit)(event);
+
   useEffect(() => {
     if (!createUserEnabled) {
       navigate('/');
@@ -118,7 +121,7 @@ const AddUser: React.FC = () => {
   return createUserEnabled ? (
     <SecurityLayout>
       <SecurityContainer>
-        <SecurityForm onSubmit={handleSubmit(onSubmit)}>
+        <SecurityForm onSubmit={submitForm}>
           <Typography align="center" component="h1" gutterBottom={true} variant="h4">
             {t('security.addUser.title')}
           </Typography>
@@ -135,7 +138,14 @@ const AddUser: React.FC = () => {
             {...register('email')}
           />
 
-          <Typography color="text.secondary" paragraph={true} sx={{ fontSize: 12 }} variant="body2">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              fontSize: 12,
+              marginBottom: '16px',
+            }}
+          >
             {t('security.addUser.emailDescription')}
           </Typography>
           {errors.root && <LoginDialogFormError error={errors.root} />}

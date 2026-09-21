@@ -53,7 +53,14 @@ const DetailSidebarTitle: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation();
   return (
-    <Box className={'detail-info'} display="flex" flexDirection="column" marginBottom="8px">
+    <Box
+      className={'detail-info'}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        marginBottom: '8px',
+      }}
+    >
       <StyledHeading>
         <TitleWrapper>
           <>

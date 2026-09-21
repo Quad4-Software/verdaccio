@@ -31,7 +31,13 @@ export const CardUnSelected = styled(Card)<{ theme?: Theme }>(({ theme }) => {
 const LanguageContent = ({ translation, icon }) => (
   <>
     <CardContent>
-      <Typography display="block" gutterBottom={true} variant="caption">
+      <Typography
+        gutterBottom={true}
+        variant="caption"
+        sx={{
+          display: 'block',
+        }}
+      >
         {translation}
       </Typography>
     </CardContent>

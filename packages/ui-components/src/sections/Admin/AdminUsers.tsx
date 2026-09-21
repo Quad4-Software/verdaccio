@@ -110,7 +110,13 @@ const AdminUsers: React.FC = () => {
 
   return (
     <Paper sx={{ marginTop: 2, padding: 2 }} variant="outlined">
-      <Box alignItems="center" display="flex" justifyContent="space-between">
+      <Box
+        sx={{
+          alignItems: 'center',
+          display: 'flex',
+          justifyContent: 'space-between',
+        }}
+      >
         <Typography component="h2" variant="h6">
           {t('admin.users.title')}
         </Typography>
@@ -144,7 +150,13 @@ const AdminUsers: React.FC = () => {
                   {user.tfa && <Chip label={t('admin.users.tfa')} size="small" />}
                 </TableCell>
                 <TableCell align="right">
-                  <Box display="flex" gap={1} justifyContent="flex-end">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      gap: 1,
+                      justifyContent: 'flex-end',
+                    }}
+                  >
                     <Button
                       data-testid={`admin-toggle-${user.name}`}
                       onClick={() => toggleAdmin(user)}
@@ -245,7 +257,13 @@ const AdminUsers: React.FC = () => {
             </DialogContentText>
           )}
           {actionError && (
-            <Typography color="error" marginTop={2} role="alert">
+            <Typography
+              color="error"
+              role="alert"
+              sx={{
+                marginTop: 2,
+              }}
+            >
               {actionError}
             </Typography>
           )}

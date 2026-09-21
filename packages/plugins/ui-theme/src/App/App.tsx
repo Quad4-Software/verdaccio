@@ -28,9 +28,13 @@ import AppRoute from './AppRoute';
 
 const StyledBox = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100%',
 }));
 
 const StyledBoxContent = styled(Box)({
+  flexGrow: 1,
   [`@media screen and (min-width: ${breakPoints.container}px)`]: {
     maxWidth: breakPoints.container,
     width: '100%',
@@ -74,11 +78,11 @@ const AppContent: React.FC = () => {
   ].includes(location.pathname as Route);
 
   return (
-    <StyledBox display="flex" flexDirection="column" height="100%">
+    <StyledBox>
       <SearchProvider>
         <Header HeaderInfoDialog={CustomInfoDialog} isPlainHeader={isPlainHeader} />
       </SearchProvider>
-      <StyledBoxContent flexGrow={1}>
+      <StyledBoxContent>
         <AppRoute />
       </StyledBoxContent>
       {configOptions.showFooter && <Footer />}

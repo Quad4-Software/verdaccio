@@ -29,7 +29,12 @@ const AdminAudit: React.FC = () => {
         {t('admin.audit.title')}
       </Typography>
       {entries.length === 0 ? (
-        <Typography color="text.secondary" marginTop={1}>
+        <Typography
+          sx={{
+            color: 'text.secondary',
+            marginTop: 1,
+          }}
+        >
           {t('admin.audit.empty')}
         </Typography>
       ) : (

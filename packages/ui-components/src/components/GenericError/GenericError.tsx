@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { common } from '@mui/material/colors';
@@ -20,13 +20,15 @@ const GenericError: React.FC = () => {
 
   return (
     <Box
-      alignItems="center"
       data-testid="generic-error"
-      display="flex"
-      flexDirection="column"
-      flexGrow={1}
-      justifyContent="center"
-      p={2}
+      sx={{
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        justifyContent: 'center',
+        p: 2,
+      }}
     >
       <Container>
         <ErrorOutlineIcon color="primary" style={{ fontSize: 236 }} />

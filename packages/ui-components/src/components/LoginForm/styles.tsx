@@ -19,7 +19,14 @@ const LoginFormHeader: React.FC<Props> = ({ onClose }) => {
   const { t } = useTranslation();
 
   return (
-    <Box alignItems="center" display="flex" flexDirection="column" position="relative">
+    <Box
+      sx={{
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+      }}
+    >
       {onClose && (
         <StyledIconButton aria-label={t('button.close')} onClick={onClose}>
           <CloseIcon />

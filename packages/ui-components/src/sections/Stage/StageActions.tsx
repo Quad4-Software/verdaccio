@@ -103,7 +103,13 @@ const StageActions: React.FC<Props> = ({ item, onDone }) => {
                 })}
           </DialogContentText>
           {error && (
-            <Typography color="error" marginTop={2} role="alert">
+            <Typography
+              color="error"
+              role="alert"
+              sx={{
+                marginTop: 2,
+              }}
+            >
               {error}
             </Typography>
           )}

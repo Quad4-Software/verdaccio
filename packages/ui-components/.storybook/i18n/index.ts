@@ -14,7 +14,7 @@ export const listLanguages = [
   { lng: 'de-DE', icon: Flags.DE, menuKey: 'lng.german' },
 ];
 
-const whitelist = listLanguages.reduce((acc, item) => {
+const supportedLngs = listLanguages.reduce((acc, item) => {
   acc.push(item.lng);
   return acc;
 }, [] as string[]);
@@ -28,7 +28,7 @@ const resources = listLanguages.reduce((acc, item) => {
 i18n.use(initReactI18next).init({
   lng: DEFAULT_LANGUAGE,
   fallbackLng: DEFAULT_LANGUAGE,
-  whitelist,
+  supportedLngs,
   load: 'currentOnly',
   react: {
     useSuspense: false,

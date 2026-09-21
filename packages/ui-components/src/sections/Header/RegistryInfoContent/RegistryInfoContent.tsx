@@ -29,7 +29,12 @@ export const NODE_MANAGER = {
 
 const renderNpmTab = (scope: string | undefined, registryUrl: string): React.JSX.Element => {
   return (
-    <Box display="flex" flexDirection="column">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <CopyClipboard
         dataTestId="copy"
         text={getCLISetConfigRegistry(`${NODE_MANAGER.npm} set`, scope, registryUrl)}
@@ -45,7 +50,12 @@ const renderNpmTab = (scope: string | undefined, registryUrl: string): React.JSX
 
 const renderPnpmTab = (scope: string | undefined, registryUrl: string): React.JSX.Element => {
   return (
-    <Box display="flex" flexDirection="column">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <CopyClipboard
         dataTestId="copy"
         text={getCLISetConfigRegistry(`${NODE_MANAGER.pnpm} set`, scope, registryUrl)}
@@ -64,7 +74,12 @@ const renderPnpmTab = (scope: string | undefined, registryUrl: string): React.JS
 
 const renderYarnTab = (scope: string | undefined, registryUrl: string): React.JSX.Element => {
   return (
-    <Box display="flex" flexDirection="column">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <CopyClipboard
         dataTestId="copy"
         text={getCLISetConfigRegistry(`${NODE_MANAGER.yarn} config set`, scope, registryUrl)}
@@ -75,7 +90,12 @@ const renderYarnTab = (scope: string | undefined, registryUrl: string): React.JS
 
 const renderYarnBerryTab = (scope: string | undefined, registryUrl: string): React.JSX.Element => {
   return (
-    <Box display="flex" flexDirection="column">
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <CopyClipboard dataTestId="copy" text={getCLISBerryYamlRegistry(scope, registryUrl)} />
     </Box>
   );

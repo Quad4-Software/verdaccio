@@ -43,7 +43,13 @@ const ActionBar: React.FC<Props> = ({ showRaw, showDownloadTarball = true, packa
   }
 
   return (
-    <Box alignItems="center" display="flex" sx={{ my: 2 }}>
+    <Box
+      sx={{
+        alignItems: 'center',
+        display: 'flex',
+        my: 2,
+      }}
+    >
       <Stack direction="row" spacing={1}>
         {actions.map((action) => (
           <ActionBarAction key={action.type} {...action} />

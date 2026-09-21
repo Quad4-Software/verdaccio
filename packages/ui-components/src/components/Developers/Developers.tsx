@@ -3,7 +3,7 @@ import Add from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import FabMUI from '@mui/material/Fab';
 import { common } from '@mui/material/colors';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import type { Theme } from '../../Theme';
 import Person from '../Person';
@@ -23,6 +23,9 @@ interface Props {
 }
 
 const StyledBox = styled(Box)({
+  display: 'flex',
+  flexWrap: 'wrap',
+  margin: '10px 0 10px 0',
   '> *': {
     marginRight: 5,
   },
@@ -37,15 +40,7 @@ const Developers: React.FC<Props> = ({ type, visibleMax = VISIBLE_MAX, packageMe
   );
 
   const [visibleDevelopersMax, setVisibleDevelopersMax] = useState(visibleMax);
-  const [visibleDevelopers, setVisibleDevelopers] = useState(developers);
-
-  useEffect(() => {
-    if (!developers.length) {
-      return;
-    }
-
-    setVisibleDevelopers(developers.slice(0, visibleDevelopersMax));
-  }, [developers, visibleDevelopersMax]);
+  const visibleDevelopers = developers.slice(0, visibleDevelopersMax);
 
   const handleSetVisibleDevelopersMax = useCallback(() => {
     setVisibleDevelopersMax(visibleDevelopersMax + VISIBLE_MAX);
@@ -60,7 +55,7 @@ const Developers: React.FC<Props> = ({ type, visibleMax = VISIBLE_MAX, packageMe
   return (
     <>
       <Title type={type} />
-      <StyledBox display="flex" flexWrap="wrap" margin="10px 0 10px 0">
+      <StyledBox>
         {visibleDevelopers.map((visibleDeveloper, index) => {
           return (
             <Person

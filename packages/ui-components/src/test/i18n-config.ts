@@ -4,7 +4,7 @@ import { initReactI18next } from 'react-i18next';
 // @ts-ignore: we don't need to load any external files for testing
 i18n.use(initReactI18next).init({
   lng: 'en-US',
-  whitelist: ['en-US'],
+  supportedLngs: ['en-US'],
   load: 'currentOnly',
   resources: {
     'en-US': {
@@ -12,7 +12,6 @@ i18n.use(initReactI18next).init({
     },
   },
   debug: false,
-  showSupportNotice: false,
   interpolation: {
     escapeValue: false, // react already safes from xss
   },

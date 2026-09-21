@@ -19,7 +19,6 @@ i18n.use(initReactI18next).init({
     'es-ES': { translation: {} },
   },
   debug: false,
-  showSupportNotice: false,
   interpolation: { escapeValue: false },
 });
 

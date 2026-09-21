@@ -26,7 +26,15 @@ const DetailContainer: React.FC = () => {
   };
 
   return (
-    <Box component="div" display="flex" flexDirection="column" minWidth={0} padding={0}>
+    <Box
+      component="div"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
+        padding: 0,
+      }}
+    >
       <Tabs
         onChange={handleChange}
         showUplinks={configOptions.showUplinks}

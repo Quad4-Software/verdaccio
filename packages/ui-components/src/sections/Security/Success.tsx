@@ -40,7 +40,13 @@ const Success: React.FC = () => {
           <Typography component="h1" gutterBottom={true} variant="h4">
             {t('security.success.title')}
           </Typography>
-          <Typography color="text.secondary" paragraph={true} variant="body1">
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'text.secondary',
+              marginBottom: '16px',
+            }}
+          >
             {message}
           </Typography>
           <Button color="primary" onClick={handleClose} sx={{ mt: 2 }} variant="contained">

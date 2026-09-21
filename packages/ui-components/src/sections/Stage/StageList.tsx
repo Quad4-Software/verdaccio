@@ -50,7 +50,13 @@ const StageList: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" padding={4}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: 4,
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -58,7 +64,11 @@ const StageList: React.FC = () => {
 
   if (error) {
     return (
-      <Box padding={2}>
+      <Box
+        sx={{
+          padding: 2,
+        }}
+      >
         <Typography color="error" role="alert">
           {t('stage.error.list')}
         </Typography>
@@ -69,11 +79,21 @@ const StageList: React.FC = () => {
   const items = data?.items ?? [];
 
   return (
-    <Box padding={2}>
+    <Box
+      sx={{
+        padding: 2,
+      }}
+    >
       <Typography component="h1" gutterBottom={true} variant="h5">
         {t('stage.title')}
       </Typography>
-      <Typography color="text.secondary" gutterBottom={true} variant="body2">
+      <Typography
+        gutterBottom={true}
+        variant="body2"
+        sx={{
+          color: 'text.secondary',
+        }}
+      >
         {t('stage.description')}
       </Typography>
 
@@ -84,7 +104,12 @@ const StageList: React.FC = () => {
       )}
 
       {items.length === 0 ? (
-        <Typography color="text.secondary" marginTop={2}>
+        <Typography
+          sx={{
+            color: 'text.secondary',
+            marginTop: 2,
+          }}
+        >
           {t('stage.empty')}
         </Typography>
       ) : (
@@ -119,7 +144,14 @@ const StageList: React.FC = () => {
                   <TableCell>{item.actor}</TableCell>
                   <TableCell>{new Date(item.createdAt).toLocaleString()}</TableCell>
                   <TableCell align="right">
-                    <Box alignItems="center" display="flex" gap={1} justifyContent="flex-end">
+                    <Box
+                      sx={{
+                        alignItems: 'center',
+                        display: 'flex',
+                        gap: 1,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
                       <Button
                         data-testid={`stage-download-${item.id}`}
                         onClick={() => handleDownload(item)}

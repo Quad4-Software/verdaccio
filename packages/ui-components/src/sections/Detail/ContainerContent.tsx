@@ -29,7 +29,7 @@ const ContainerContent: React.FC<Props> = ({ tabPosition, readDescription }) => 
     case TabPosition.UPLINKS:
       return <UpLinks packageMeta={packageMeta} />;
     case TabPosition.VERSIONS:
-      return <Versions packageMeta={packageMeta} packageName={packageName} />;
+      return <Versions key={packageName} packageMeta={packageMeta} packageName={packageName} />;
     case TabPosition.DEPENDENCIES:
       return <Dependencies packageMeta={packageMeta} />;
     default:

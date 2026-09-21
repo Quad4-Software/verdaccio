@@ -158,6 +158,12 @@ const TwoFactorAuth: React.FC = () => {
   const tfa = profile?.tfa;
   const isEnabled = typeof tfa === 'object' && tfa !== null && tfa.pending === false;
 
+  // handleSubmit must be invoked at submit time, not during render
+  const submitVerify = (event: React.BaseSyntheticEvent) =>
+    verifyForm.handleSubmit(onVerify)(event);
+  const submitEnable = (event: React.BaseSyntheticEvent) =>
+    enableForm.handleSubmit(isEnabled ? onDisable : onEnable)(event);
+
   return (
     <SecurityLayout>
       <SecurityContainer>
@@ -190,7 +196,7 @@ const TwoFactorAuth: React.FC = () => {
             </Button>
           </SecurityForm>
         ) : step === 'enrol' && otpauthUrl ? (
-          <SecurityForm onSubmit={verifyForm.handleSubmit(onVerify)}>
+          <SecurityForm onSubmit={submitVerify}>
             <Typography align="center" component="h1" gutterBottom={true} variant="h4">
               {t('security.tfa.enrol.title')}
             </Typography>
@@ -219,7 +225,9 @@ const TwoFactorAuth: React.FC = () => {
             <SecurityTextField
               error={!!verifyForm.formState.errors.code}
               helperText={verifyForm.formState.errors.code?.message}
-              inputProps={{ autoComplete: 'one-time-code', inputMode: 'numeric' }}
+              slotProps={{
+                htmlInput: { autoComplete: 'one-time-code', inputMode: 'numeric' },
+              }}
               label={t('security.tfa.enrol.code')}
               {...verifyForm.register('code')}
               required={true}
@@ -239,7 +247,7 @@ const TwoFactorAuth: React.FC = () => {
             </Button>
           </SecurityForm>
         ) : (
-          <SecurityForm onSubmit={enableForm.handleSubmit(isEnabled ? onDisable : onEnable)}>
+          <SecurityForm onSubmit={submitEnable}>
             <Typography align="center" component="h1" gutterBottom={true} variant="h4">
               {t('security.tfa.title')}
             </Typography>

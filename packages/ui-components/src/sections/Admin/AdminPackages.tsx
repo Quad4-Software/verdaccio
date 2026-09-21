@@ -60,7 +60,12 @@ const AdminPackages: React.FC = () => {
         </Typography>
       )}
       {packages.length === 0 ? (
-        <Typography color="text.secondary" marginTop={1}>
+        <Typography
+          sx={{
+            color: 'text.secondary',
+            marginTop: 1,
+          }}
+        >
           {t('admin.packages.empty')}
         </Typography>
       ) : (

@@ -2,10 +2,12 @@
  * Setup configuration for Vitest
  * This file includes global settings for the test environment.
  */
-import '@testing-library/jest-dom/vitest';
+// Use ./matchers + extend from this vitest instance: the /vitest entry imports
+// its own vitest copy, whose rejects/resolves registration clobbers ours.
+import * as jestDomMatchers from '@testing-library/jest-dom/matchers';
 import createDebugger from 'debug';
 import 'mutationobserver-shim';
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { Headers, Request, Response, fetch } from 'whatwg-fetch';
 
@@ -67,6 +69,8 @@ for (const key of ['localStorage', 'sessionStorage'] as const) {
     });
   }
 }
+
+expect.extend(jestDomMatchers);
 
 beforeAll(() => {
   server.listen({

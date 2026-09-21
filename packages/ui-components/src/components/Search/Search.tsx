@@ -1,4 +1,5 @@
 import SearchMui from '@mui/icons-material/Search';
+import type { AutocompleteRenderInputParams } from '@mui/material/Autocomplete';
 import { debounce } from 'lodash-es';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -53,7 +54,9 @@ const Search: React.FC = () => {
 
   // Use a ref to always access the latest doSearch without re-creating the debounced function
   const doSearchRef = useRef(doSearch);
-  doSearchRef.current = doSearch;
+  useEffect(() => {
+    doSearchRef.current = doSearch;
+  }, [doSearch]);
 
   // shows the dropdown as loading during the debounce window; without it the
   // immediate reset below reads as "no results found" on every keystroke
@@ -94,6 +97,7 @@ const Search: React.FC = () => {
   // Memoize the debounced function so a single instance is reused across renders,
   // ensuring the debounce timer works correctly instead of creating a new timer per render.
   const debouncedFetch = useMemo(
+    // oxlint-disable-next-line react/refs -- debounce only invokes the callback at event time
     () => debounce(handleFetchPackages, CONSTANTS.API_DELAY),
     [handleFetchPackages]
   );
@@ -136,20 +140,24 @@ const Search: React.FC = () => {
     );
   };
 
-  const renderInput = (params) => {
+  const renderInput = (params: AutocompleteRenderInputParams) => {
     return (
       <StyledTextField
         {...params}
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <StyledInputAdornment position="start">
-              <SearchMui />
-            </StyledInputAdornment>
-          ),
-        }}
         label=""
         placeholder={t('search.packages')}
+        slotProps={{
+          inputLabel: params.slotProps.inputLabel,
+          input: {
+            ...params.slotProps.input,
+            startAdornment: (
+              <StyledInputAdornment position="start">
+                <SearchMui />
+              </StyledInputAdornment>
+            ),
+          },
+          htmlInput: params.slotProps.htmlInput,
+        }}
         variant="standard"
       />
     );

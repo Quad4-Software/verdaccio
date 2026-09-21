@@ -1,5 +1,5 @@
 import buildDebug from 'debug';
-import globby from 'globby';
+import { globby } from 'globby';
 import { join } from 'node:path';
 
 import type { searchUtils } from '@verdaccio/core';
@@ -14,7 +14,6 @@ const debug = buildDebug('verdaccio:plugin:local-storage:utils');
  */
 export async function getFolders(storagePath: string, pattern = '*'): Promise<string[]> {
   const files = await globby(pattern, {
-    // @ts-ignore
     cwd: storagePath,
     expandDirectories: true,
     onlyDirectories: true,

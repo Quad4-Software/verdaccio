@@ -47,7 +47,13 @@ const AdminMetrics: React.FC = () => {
       <Typography component="h2" gutterBottom={true} variant="h6">
         {t('admin.metrics.title')}
       </Typography>
-      <Box display="flex" flexWrap="wrap" gap={1}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 1,
+        }}
+      >
         {stats.map((stat) => (
           <Chip
             data-testid={`admin-metric-${stat.label}`}
@@ -58,7 +64,14 @@ const AdminMetrics: React.FC = () => {
         ))}
       </Box>
       {Object.keys(data.requests.byStatus).length > 0 && (
-        <Box display="flex" flexWrap="wrap" gap={1} marginTop={1}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            marginTop: 1,
+          }}
+        >
           {Object.entries(data.requests.byStatus).map(([status, count]) => (
             <Chip
               key={status}

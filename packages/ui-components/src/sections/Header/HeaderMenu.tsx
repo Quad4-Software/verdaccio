@@ -12,7 +12,7 @@ import { useAdminStatus } from '../../sections/Admin/useAdmin';
 import { Route } from '../../utils';
 import HeaderGreetings from './HeaderGreetings';
 
-// Workaround: MUI v7 MenuProps type resolution breaks inherited PopoverProps.
+// Workaround: MUI MenuProps type resolution breaks inherited PopoverProps.
 const TypedMenu = Menu as React.FC<any>;
 
 interface Props {

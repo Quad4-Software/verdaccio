@@ -57,7 +57,7 @@ const SetupAdmin: React.FC = () => {
   const basePath = stripTrailingSlash(configuration.base);
   const [token] = useState(readSetupToken);
   const [expires, setExpires] = useState<number | null>(null);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState<number | null>(null);
   const [linkError, setLinkError] = useState('');
   const inFlight = useRef(false);
 
@@ -78,7 +78,6 @@ const SetupAdmin: React.FC = () => {
 
   useEffect(() => {
     if (!token) {
-      setLinkError(t('security.setup.missing'));
       return;
     }
     let cancelled = false;
@@ -111,9 +110,12 @@ const SetupAdmin: React.FC = () => {
     return () => window.clearInterval(id);
   }, [expires]);
 
-  const remaining = expires ? Math.max(0, expires - now) : 0;
+  const linkErrorMessage = token ? linkError : t('security.setup.missing');
+  const remaining = expires !== null && now !== null ? Math.max(0, expires - now) : null;
   const expired = Boolean(expires && remaining === 0);
-  const linkReady = Boolean(token && expires && remaining > 0 && !linkError);
+  const linkReady = Boolean(
+    token && expires && remaining !== null && remaining > 0 && !linkErrorMessage
+  );
 
   const onSubmit = useCallback(
     async (data: SetupAdminFormValues) => {
@@ -152,24 +154,40 @@ const SetupAdmin: React.FC = () => {
     [create, navigate, setError, setUserState, t, token]
   );
 
+  // handleSubmit must be invoked at submit time, not during render
+  const submitForm = (event: React.BaseSyntheticEvent) => handleSubmit(onSubmit)(event);
+
   return (
     <SecurityLayout>
       <SecurityContainer>
-        <SecurityForm onSubmit={handleSubmit(onSubmit)}>
+        <SecurityForm onSubmit={submitForm}>
           <Typography align="center" component="h1" gutterBottom={true} variant="h4">
             {t('security.setup.title')}
           </Typography>
-          <Typography color="text.secondary" paragraph={true} sx={{ fontSize: 14 }} variant="body2">
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              fontSize: 14,
+              marginBottom: '16px',
+            }}
+          >
             {t('security.setup.description')}
           </Typography>
           {linkReady && (
             <Typography align="center" sx={{ mb: 1 }} variant="body2">
-              {t('security.setup.expires', { time: formatRemaining(remaining) })}
+              {t('security.setup.expires', { time: formatRemaining(remaining ?? 0) })}
             </Typography>
           )}
-          {(linkError || expired) && (
-            <Typography color="error" paragraph={true} variant="body2">
-              {linkError || t('security.setup.expired')}
+          {(linkErrorMessage || expired) && (
+            <Typography
+              color="error"
+              variant="body2"
+              sx={{
+                marginBottom: '16px',
+              }}
+            >
+              {linkErrorMessage || t('security.setup.expired')}
             </Typography>
           )}
           <SecurityTextField

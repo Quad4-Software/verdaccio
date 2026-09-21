@@ -22,13 +22,15 @@ const UnAuthorized: React.FC = () => {
 
   return (
     <Box
-      alignItems="center"
       data-testid="unauthorized"
-      display="flex"
-      flexDirection="column"
-      flexGrow={1}
-      justifyContent="center"
-      p={2}
+      sx={{
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1,
+        justifyContent: 'center',
+        p: 2,
+      }}
     >
       <Container>
         <LockIcon color="primary" style={{ fontSize: 236 }} />

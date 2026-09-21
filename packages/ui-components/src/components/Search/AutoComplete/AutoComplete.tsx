@@ -78,7 +78,6 @@ const AutoComplete: FC<Props> = ({
         options={hasError ? [] : suggestions}
         renderInput={renderInput}
         renderOption={renderOption}
-        renderTags={() => null}
       />
     </Wrapper>
   );

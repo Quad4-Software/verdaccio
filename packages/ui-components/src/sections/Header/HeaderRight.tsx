@@ -1,7 +1,7 @@
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import type { MouseEvent } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useCustomTheme } from '../../';
@@ -38,14 +38,10 @@ const HeaderRight: React.FC<Props> = ({
   // @ts-ignore
   const { isDarkMode, setIsDarkMode } = useCustomTheme();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const isMenuOpen = Boolean(anchorEl);
   const hideLoginSection = hasLogin === false;
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    setIsMenuOpen(Boolean(anchorEl));
-  }, [anchorEl]);
 
   /**
    * opens popover menu for logged in user.

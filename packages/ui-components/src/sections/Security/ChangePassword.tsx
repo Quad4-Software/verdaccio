@@ -86,6 +86,9 @@ const ChangePassword: React.FC = () => {
     [handleChangePassword, setError, navigate, t]
   );
 
+  // handleSubmit must be invoked at submit time, not during render
+  const submitForm = (event: React.BaseSyntheticEvent) => handleSubmit(onSubmit)(event);
+
   useEffect(() => {
     if (!changePasswordEnabled) {
       navigate('/');
@@ -95,7 +98,7 @@ const ChangePassword: React.FC = () => {
   return changePasswordEnabled ? (
     <SecurityLayout>
       <SecurityContainer>
-        <SecurityForm onSubmit={handleSubmit(onSubmit)}>
+        <SecurityForm onSubmit={submitForm}>
           <Typography align="center" component="h1" gutterBottom={true} variant="h4">
             {t('security.changePassword.title')}
           </Typography>

@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useConfig } from '../../providers';
 import { useSettings } from '../../providers/PersistenceSettingProvider';
 
-// Workaround: MUI v7 MenuProps type resolution breaks inherited PopoverProps (anchorOrigin, transformOrigin, id, etc.)
+// Workaround: MUI MenuProps type resolution breaks inherited PopoverProps (anchorOrigin, transformOrigin, id, etc.)
 const TypedMenu = Menu as React.FC<any>;
 
 interface Props {

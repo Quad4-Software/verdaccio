@@ -57,6 +57,10 @@ overrides:
   # and mdast-util-to-hast class attribute injection (GHSA-4fh9-h7wg-q85m, 13.2.1).
   yaml: '>=1.10.3'
   mdast-util-to-hast: '>=13.2.1'
+  # Keep vitest's optional jsdom peer on one version everywhere so a single
+  # vitest instance exists: two variants share one chai and the last-loaded
+  # copy's rejects/resolves registration wins, breaking .rejects assertions.
+  jsdom: '30.0.1'
 saveExact: true
 ignoreScripts: true
 preferFrozenLockfile: true

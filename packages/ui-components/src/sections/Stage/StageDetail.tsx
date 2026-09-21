@@ -38,7 +38,13 @@ const StageDetail: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" padding={4}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: 4,
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -46,7 +52,11 @@ const StageDetail: React.FC = () => {
 
   if (error || !data) {
     return (
-      <Box padding={2}>
+      <Box
+        sx={{
+          padding: 2,
+        }}
+      >
         <Typography color="error" role="alert">
           {t('stage.error.notFound')}
         </Typography>
@@ -65,7 +75,11 @@ const StageDetail: React.FC = () => {
   ];
 
   return (
-    <Box padding={2}>
+    <Box
+      sx={{
+        padding: 2,
+      }}
+    >
       <Button onClick={() => navigate(Route.STAGE)} size="small">
         {t('stage.backToList')}
       </Button>
@@ -88,7 +102,13 @@ const StageDetail: React.FC = () => {
         </Table>
       </Paper>
 
-      <Box display="flex" gap={1} marginTop={2}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          marginTop: 2,
+        }}
+      >
         <Button onClick={handleDownload} size="small" variant="outlined">
           {t('stage.action.download')}
         </Button>

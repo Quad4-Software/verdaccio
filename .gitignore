@@ -58,6 +58,9 @@ e2e/ui/cypress/downloads/**/*
 # storybook
 packages/ui-components/storybook-static
 
+# vitest generated artifacts
+.vitest/
+
 # Claude Code's local state, except the tracked skills symlink. Git cannot
 # re-include a path inside an excluded directory, so the root .claude
 # directory is un-excluded first and its contents excluded again.

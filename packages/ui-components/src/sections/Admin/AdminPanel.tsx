@@ -20,7 +20,13 @@ const AdminPanel: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" padding={4}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          padding: 4,
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -28,7 +34,11 @@ const AdminPanel: React.FC = () => {
 
   if (error || !status?.admin) {
     return (
-      <Box padding={2}>
+      <Box
+        sx={{
+          padding: 2,
+        }}
+      >
         <Typography color="error" role="alert">
           {t('admin.error.not-admin')}
         </Typography>
@@ -37,7 +47,11 @@ const AdminPanel: React.FC = () => {
   }
 
   return (
-    <Box padding={2}>
+    <Box
+      sx={{
+        padding: 2,
+      }}
+    >
       <Typography component="h1" gutterBottom={true} variant="h5">
         {t('admin.title')}
       </Typography>

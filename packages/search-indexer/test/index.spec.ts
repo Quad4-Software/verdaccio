@@ -42,5 +42,11 @@ test('should search', async () => {
     description: '',
   });
   const query = await SearchMemoryIndexer.query('verdaccio');
-  expect(query.hits.map((item) => item.id)).toEqual(['verdaccio', 'verdaccio-utils']);
+  // all three names contain the 'verdaccio' token; hits tie on score, so
+  // compare order-insensitively
+  expect(query.hits.map((item) => item.id).sort()).toEqual([
+    'verdaccio',
+    'verdaccio-search',
+    'verdaccio-utils',
+  ]);
 });

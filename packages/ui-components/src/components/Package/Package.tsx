@@ -185,7 +185,14 @@ const Package: React.FC<PackageInterface> = ({
 
   const renderPrimaryComponent = (): React.ReactNode => {
     return (
-      <Grid alignItems="center" container={true} size={{ xs: 12 }} wrap="wrap">
+      <Grid
+        container={true}
+        size={{ xs: 12 }}
+        wrap="wrap"
+        sx={{
+          alignItems: 'center',
+        }}
+      >
         <Grid size="grow">
           <WrapperLink to={`${Route.DETAIL}${packageName}`}>
             <PackageTitle className="package-title" data-testid="package-title">

@@ -2,9 +2,11 @@
  * Setup configuration for Vitest
  * This file includes global settings for the test environment.
  */
-import '@testing-library/jest-dom/vitest';
+// Use ./matchers + extend from this vitest instance: the /vitest entry imports
+// its own vitest copy, whose rejects/resolves registration clobbers ours.
+import * as jestDomMatchers from '@testing-library/jest-dom/matchers';
 import 'mutationobserver-shim';
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 import { Headers, Request, Response, fetch } from 'whatwg-fetch';
 
 // Override the global fetch and related APIs
@@ -12,6 +14,8 @@ global.fetch = fetch;
 global.Headers = Headers;
 global.Request = Request;
 global.Response = Response;
+
+expect.extend(jestDomMatchers);
 
 // @ts-ignore : Property '__VERDACCIO_BASENAME_UI_OPTIONS' does not exist on type 'Global'.
 global.__VERDACCIO_BASENAME_UI_OPTIONS = {

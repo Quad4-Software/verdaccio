@@ -6,7 +6,7 @@ import CardContent from '@mui/material/CardContent';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { debounce } from 'lodash-es';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import semver from 'semver';
 
@@ -28,11 +28,11 @@ const Versions: React.FC<Props> = ({ packageMeta, packageName }) => {
   const { versions = {}, time = {}, ['dist-tags']: distTags = {} } = packageMeta ?? {};
 
   const [textSearch, setTextSearch] = useState('');
-  // the detail routes reuse this mounted component across packages: reset the
-  // filter so the previous package's text does not apply to the next one
-  useEffect(() => {
+  const [prevName, setPrevName] = useState(packageName);
+  if (prevName !== packageName) {
+    setPrevName(packageName);
     setTextSearch('');
-  }, [packageName]);
+  }
   const packageVersions = useMemo(() => {
     if (textSearch === '') {
       return versions;

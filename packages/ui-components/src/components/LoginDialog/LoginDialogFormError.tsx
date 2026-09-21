@@ -27,7 +27,13 @@ const LoginDialogFormError = memo(({ error }: Props) => {
   return (
     <StyledSnackbarContent
       message={
-        <Box alignItems="center" data-testid="error" display="flex">
+        <Box
+          data-testid="error"
+          sx={{
+            alignItems: 'center',
+            display: 'flex',
+          }}
+        >
           <StyledErrorIcon />
           {error.message}
         </Box>

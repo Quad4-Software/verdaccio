@@ -30,7 +30,7 @@ class SearchMemoryIndexer {
   public async query(term: string): Promise<Results | void> {
     if (this.database) {
       debug('searching %s at indexer', term);
-      const searchResult = await search(this.database, {
+      const searchResult = search(this.database, {
         term,
       });
 
@@ -63,7 +63,7 @@ class SearchMemoryIndexer {
         keywords: this.prepareKeywords(pkg.keywords),
         author: pkg._npmUser ? pkg._npmUser.name : '',
       };
-      await insert(this.database, item);
+      insert(this.database, item);
     }
   }
 
@@ -74,7 +74,7 @@ class SearchMemoryIndexer {
   public async remove(name: string): Promise<void> {
     if (this.database) {
       debug('removing item %s to the indexer', name);
-      await remove(this.database, name);
+      remove(this.database, name);
     }
   }
 
@@ -108,7 +108,7 @@ class SearchMemoryIndexer {
 
   public async init(logger: Logger) {
     this.logger = logger;
-    this.database = await create({
+    this.database = create({
       schema: {
         id: 'string',
         name: 'string',
