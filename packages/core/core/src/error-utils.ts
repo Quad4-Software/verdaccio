@@ -46,6 +46,7 @@ export const API_ERROR = {
   SESSION_ID_REQUIRED: 'session id is required',
   SESSION_ID_INVALID: 'session id is invalid',
   SESSION_TOKEN_EXPIRED: 'session token expired',
+  TOKEN_PACKAGE_SCOPE_MISMATCH: 'token is not authorized for this package',
 };
 
 export const SUPPORT_ERRORS = {

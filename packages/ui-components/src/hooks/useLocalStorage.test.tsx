@@ -47,13 +47,23 @@ describe('useLocalStorage', () => {
 
   test('should keep working when localStorage write fails (e.g. quota exceeded)', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('QuotaExceededError');
+    const original = window.localStorage;
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: {
+        setItem: () => {
+          throw new Error('QuotaExceededError');
+        },
+      },
     });
-    const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
-    act(() => {
-      result.current[1]('updated');
-    });
-    expect(consoleError).toHaveBeenCalled();
+    try {
+      const { result } = renderHook(() => useLocalStorage('test-key', 'initial'));
+      act(() => {
+        result.current[1]('updated');
+      });
+      expect(consoleError).toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(window, 'localStorage', { configurable: true, value: original });
+    }
   });
 });

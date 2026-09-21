@@ -4,6 +4,7 @@ import { WebUrlsNamespace, rateLimit } from '@verdaccio/middleware';
 
 import { hasLogin } from '../web-utils';
 import admin from './admin';
+import feed from './feed';
 import packageApi from './package';
 import readme from './readme';
 import search from './search';
@@ -23,6 +24,7 @@ export default (auth, storage, config) => {
     })
   );
   route.use(WebUrlsNamespace.data, packageApi(storage, auth, config));
+  route.use(WebUrlsNamespace.data, feed(storage, auth, config));
   route.use(WebUrlsNamespace.data, search(storage, auth));
   route.use(WebUrlsNamespace.data, sidebar(config, storage, auth));
   route.use(WebUrlsNamespace.data, readme(storage, auth, config));

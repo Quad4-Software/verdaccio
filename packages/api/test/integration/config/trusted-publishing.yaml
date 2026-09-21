@@ -1,0 +1,42 @@
+storage: ./storage
+
+auth:
+  htpasswd:
+    file: ./htpasswd
+
+packages:
+  '@token/*':
+    access: $authenticated
+    publish: $authenticated
+  'only-you-can-publish':
+    access: $authenticated
+    publish: $authenticated
+
+log: { type: stdout, format: pretty, level: debug }
+
+security:
+  api:
+    jwt:
+      sign:
+        expiresIn: 5m
+        notBefore: 0
+      verify: {}
+  trustedPublishing:
+    - provider: github
+      repository: acme/widgets
+      workflow: release.yml
+      issuer: https://issuer.test
+      # the spec rewrites this to the local JWKS stub
+      jwksUri: http://127.0.0.1:0/jwks
+      packages:
+        - '@token/*'
+      user: ci-bot
+    - provider: gitlab
+      repository: acme/gitlab-proj
+      workflow: .gitlab-ci.yml
+      issuer: https://gitlab.test
+      jwksUri: http://127.0.0.1:0/jwks
+      environment: production
+      packages:
+        - '@token/gitlab-*'
+      user: ci-bot

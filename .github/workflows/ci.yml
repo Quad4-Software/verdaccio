@@ -18,7 +18,6 @@ on:
 permissions:
   actions: read
   contents: read
-  security-events: write
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -41,6 +40,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Check changeset
         uses: ./.github/actions/changeset-check        
   lint-and-format:
@@ -50,6 +50,8 @@ jobs:
     if: ${{ always() && !failure() && !cancelled() && github.event.pull_request.draft == false }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install dependencies
         uses: ./.github/actions/install-app
         with:
@@ -70,6 +72,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Build application with Node ${{ matrix.node_version }}
         uses: ./.github/actions/build-app
         with:
@@ -91,6 +95,8 @@ jobs:
     name: Test Docker Build
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Build Docker image
         run: docker build -t verdaccio-test .
         env:
@@ -121,6 +127,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install dependencies
         uses: ./.github/actions/install-app
         with:
@@ -164,6 +172,8 @@ jobs:
           - deno
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install dependencies
         uses: ./.github/actions/install-app
       - name: Setup Bun
@@ -209,6 +219,8 @@ jobs:
     name: E2E UI
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install dependencies
         uses: ./.github/actions/install-app
       - name: Restore build artifacts
@@ -275,6 +287,8 @@ jobs:
     name: Changeset validation
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install dependencies
         uses: ./.github/actions/install-app
       - name: Run changeset version
@@ -293,6 +307,8 @@ jobs:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository == 'verdaccio/verdaccio') || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
@@ -327,6 +343,8 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Delete build artifact caches
         env:
           GH_TOKEN: ${{ github.token }}

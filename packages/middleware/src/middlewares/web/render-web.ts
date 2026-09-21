@@ -9,12 +9,18 @@ import { isURLhasValidProtocol } from '@verdaccio/url';
 import { setSecurityWebHeaders } from './security';
 import { sendFileCallback, sendFileSafe } from './utils/file-utils';
 import renderHTML from './utils/renderHTML';
+import type { PackageSeoResolver } from './utils/seo';
 import { getUIOptions } from './utils/ui-options';
 import { WebUrlsNamespace } from './web-urls';
 
 const debug = buildDebug('verdaccio:middleware:web:render');
 
-export function renderWebMiddleware(config, tokenMiddleware, pluginOptions) {
+export function renderWebMiddleware(
+  config,
+  tokenMiddleware,
+  pluginOptions,
+  getPackageSeo?: PackageSeoResolver
+) {
   const { staticPath, manifest, manifestFiles } = pluginOptions;
   debug('static path %o', staticPath);
 
@@ -97,11 +103,27 @@ export function renderWebMiddleware(config, tokenMiddleware, pluginOptions) {
   // Serve external script that loads UI options
   router.get(WebUrlsNamespace.static + 'ui-options.js', function (req, res) {
     const options = getUIOptions(config, req, res);
-    const script = `window.__VERDACCIO_BASENAME_UI_OPTIONS=${JSON.stringify(options)};`;
+    // escape < so a config value cannot close the script element
+    const script = `window.__VERDACCIO_BASENAME_UI_OPTIONS=${JSON.stringify(options).replace(/</g, '\\u003c')};`;
     res.setHeader(HEADERS.CACHE_CONTROL, HEADERS.NO_CACHE);
     res.setHeader(HEADERS.CONTENT_TYPE, HEADERS.JAVASCRIPT_CHARSET);
     res.send(script);
   });
+
+  // Package detail pages get package-specific meta for crawlers and link
+  // previews; a resolver failure falls back to the generic meta
+  const renderDetail = async function (req, res, _next) {
+    const options = getUIOptions(config, req, res);
+    try {
+      const seo = getPackageSeo ? await getPackageSeo(req) : undefined;
+      renderHTML(config, manifest, manifestFiles, options, res, seo);
+    } catch (error: any) {
+      debug('seo resolver failed %o', error?.message);
+      renderHTML(config, manifest, manifestFiles, options, res);
+    }
+  };
+  router.get('/-/web/detail/:package{/:view/:version}', renderDetail);
+  router.get('/-/web/detail/:scope/:package{/:view/:version}', renderDetail);
 
   // Handle all web routes including security routes
   router.get(WebUrlsNamespace.web, function (req, res) {

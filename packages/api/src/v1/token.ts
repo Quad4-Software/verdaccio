@@ -21,16 +21,42 @@ import type { $NextFunctionVer, $RequestExtend } from '../../types/custom';
 // yet. They are accepted so `npm token create` succeeds, but the restrictions
 // they express are NOT enforced — warn so the operator is not misled.
 const UNSUPPORTED_TOKEN_OPTIONS = [
-  'packages_and_scopes_permission',
-  'packages',
-  'packages_all',
-  'scopes',
   'orgs',
   'orgs_permission',
   'expires',
   'description',
   'bypass_2fa',
 ];
+
+// npm sends `packages` (exact names) and `scopes` (`@scope` entries covering
+// everything under the scope); both become the token's package patterns
+const MAX_TOKEN_SCOPE_ENTRIES = 100;
+
+// null marks malformed input; undefined means no package scope was requested
+function normalizeTokenScope(packages: unknown, scopes: unknown): string[] | null | void {
+  const patterns: string[] = [];
+  for (const [value, isScope] of [
+    [packages, false],
+    [scopes, true],
+  ] as const) {
+    if (isNil(value)) {
+      continue;
+    }
+    if (!Array.isArray(value) || value.some((entry) => typeof entry !== 'string' || entry === '')) {
+      return null;
+    }
+    for (const entry of value) {
+      patterns.push(isScope ? `${entry}/*` : entry);
+    }
+  }
+  if (patterns.length === 0) {
+    return;
+  }
+  if (patterns.length > MAX_TOKEN_SCOPE_ENTRIES || patterns.some((p) => p.length > 214)) {
+    return null;
+  }
+  return patterns;
+}
 
 export type NormalizeToken = Token & {
   cidr_whitelist: string[];
@@ -102,9 +128,21 @@ export default function (
       // type is still rejected.
       const readonly = req.body?.readonly ?? false;
       const cidr_whitelist = req.body?.cidr_whitelist ?? [];
+      const packagesScope = normalizeTokenScope(req.body?.packages, req.body?.scopes);
+      // npm's granular-token permission: `read` is equivalent to readonly;
+      // `write-only` has no equivalent, so it is reported as unsupported below
+      const scopePermission = req.body?.packages_and_scopes_permission;
 
-      if (!isBoolean(readonly) || !Array.isArray(cidr_whitelist)) {
+      if (!isBoolean(readonly) || !Array.isArray(cidr_whitelist) || packagesScope === null) {
         return next(errorUtils.getCode(HTTP_STATUS.BAD_DATA, SUPPORT_ERRORS.PARAMETERS_NOT_VALID));
+      }
+
+      const effectiveReadonly = scopePermission === 'read' ? true : readonly;
+      if (scopePermission === 'write-only') {
+        logger.warn(
+          { userAgent: req.get('user-agent') ?? 'unknown' },
+          'write-only token permission is not supported; token will allow reads (client: @{userAgent})'
+        );
       }
 
       const unsupportedOptions = UNSUPPORTED_TOKEN_OPTIONS.filter(
@@ -154,7 +192,8 @@ export default function (
             token: maskedToken,
             key,
             cidr: cidr_whitelist,
-            readonly,
+            readonly: effectiveReadonly,
+            packages: packagesScope ?? undefined,
             created,
           };
 
@@ -167,7 +206,8 @@ export default function (
               user: name,
               key: saveToken.key,
               cidr: cidr_whitelist,
-              readonly,
+              readonly: effectiveReadonly,
+              packages: packagesScope ?? undefined,
               created: saveToken.created,
             })
           );

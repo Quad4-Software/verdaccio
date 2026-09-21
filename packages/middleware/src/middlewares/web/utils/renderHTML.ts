@@ -6,6 +6,7 @@ import { HEADERS } from '@verdaccio/core';
 import type { ConfigYaml, TemplateUIOptions } from '@verdaccio/types';
 
 import type { Manifest } from './manifest';
+import type { SeoMeta } from './seo';
 import renderTemplate from './template';
 import type { AssetManifest } from './template';
 
@@ -25,7 +26,8 @@ export default function renderHTML(
   manifest: AssetManifest,
   manifestFiles: Manifest | null | undefined,
   options: TemplateUIOptions,
-  res: Response
+  res: Response,
+  seo?: SeoMeta
 ) {
   // @ts-ignore
   const needHtmlCache = [undefined, null].includes(config?.web?.html_cache)
@@ -38,7 +40,7 @@ export default function renderHTML(
 
   let webPage;
 
-  const cacheKey = `template:${JSON.stringify(options)}`;
+  const cacheKey = `template:${JSON.stringify(options)}:${JSON.stringify(seo ?? null)}`;
 
   try {
     webPage = cache.get(cacheKey);
@@ -50,6 +52,7 @@ export default function renderHTML(
           scriptsBodyAfter,
           metaScripts,
           scriptsBodyBefore,
+          seo,
         },
         manifest
       );

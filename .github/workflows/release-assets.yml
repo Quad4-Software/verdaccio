@@ -1,0 +1,57 @@
+name: 'Release assets (SBOM + OpenVEX)'
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    name: 'Generate SBOMs and attach to release'
+    runs-on: ubuntu-latest
+    permissions:
+      # creates the GitHub release and uploads assets to it
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # syft walks pnpm-lock.yaml, so the full resolved dependency tree is
+      # captured without an install step
+      - name: Generate SPDX SBOM
+        uses: anchore/sbom-action@006b7ce8314066bdf1765b4500370d40fa6917a3 # v0.24.2
+        with:
+          format: spdx-json
+          output-file: sbom.spdx.json
+          upload-artifact: false
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@006b7ce8314066bdf1765b4500370d40fa6917a3 # v0.24.2
+        with:
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
+          upload-artifact: false
+
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-${{ github.ref_name }}
+          path: |
+            sbom.spdx.json
+            sbom.cyclonedx.json
+            openvex.json
+          retention-days: 90
+
+      - name: Attach assets to GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" --generate-notes
+          fi
+          gh release upload "$TAG" sbom.spdx.json sbom.cyclonedx.json openvex.json --clobber

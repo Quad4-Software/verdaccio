@@ -53,3 +53,39 @@ security:
 ```
 
 Group names from the auth plugin work too. User management needs an auth plugin that exposes it; the bundled htpasswd plugin does and stores the admin list in `<htpasswd file>.admins`. The action log is held in memory and resets on restart.
+
+## Authentication
+
+- TOTP two-factor auth. Users enroll under `/-/web/two-factor`; the setup page shows a QR code for authenticator apps.
+- OIDC single sign-on via the bundled `verdaccio-oidc` plugin. Browser login, npm CLI web auth, bearer tokens, PKCE, JWKS verification, and group mapping are supported. See `packages/plugins/oidc`.
+- Scoped tokens. `npm token create` accepts `packages` and `scopes` (minimatch patterns, converted to `@scope/*`), plus `cidr` IP or range pinning and `readonly`. Enforced in the auth layer, so plugins cannot widen a token's scope.
+- Trusted publishing. `POST /-/npm/v1/oidc/token/exchange/package/:package` exchanges a CI OIDC token (GitHub Actions `id-token`, GitLab `NPM_ID_TOKEN`) for a short-lived publish token. Configure publishers under `security.trustedPublishing` in the config.
+
+## Feeds
+
+RSS feeds are served at `/-/verdaccio/data/feed` (recent package updates) and `/-/verdaccio/data/feed/<package>` (per-package release history). Feeds respect package access rules and private visibility.
+
+## Supply chain
+
+The container image is published to `ghcr.io` on tags and `master` pushes (`latest` on release tags, `nightly-master` on master), with SBOM, provenance attestations, and keyless cosign signatures:
+
+```bash
+cosign verify ghcr.io/<org>/<repo>:latest \
+  --certificate-identity-regexp "https://github.com/<org>/<repo>" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+Releases attach a CycloneDX SBOM and `openvex.json`.
+
+For scanning packages and the image itself, these free tools cover the surface:
+
+| Tool                         | Covers                                 |
+| ---------------------------- | -------------------------------------- |
+| `trivy fs .` / `trivy image` | deps, image CVEs, secrets, misconfig   |
+| `grype` + `syft`             | image/filesystem CVEs, SBOM generation |
+| `osv-scanner`                | dependency vulnerabilities via OSV     |
+| `pnpm audit` / `npm audit`   | dependency advisories                  |
+| `gitleaks`                   | secrets in the repo                    |
+| `semgrep` (community)        | source-level SAST                      |
+
+`pnpm audit` and OpenSSF Scorecard, CodeQL, and zizmor already run in CI under `.github/workflows`.

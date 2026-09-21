@@ -6,6 +6,7 @@ import '@testing-library/jest-dom/vitest';
 import createDebugger from 'debug';
 import 'mutationobserver-shim';
 import { vi } from 'vitest';
+import { JSDOM } from 'jsdom';
 import { Headers, Request, Response, fetch } from 'whatwg-fetch';
 
 import { server } from './server';
@@ -50,6 +51,21 @@ if (global.document) {
     selectNodeContents: (): void => {},
   }));
   document.execCommand = vi.fn();
+}
+
+// Node's built-in web storage globals are inert without --localstorage-file
+// and shadow jsdom's implementation on globalThis; install storage from a
+// dedicated jsdom window (a real URL is required for a non-opaque origin)
+const storageDom = new JSDOM('', { url: 'http://localhost:9000/' });
+for (const key of ['localStorage', 'sessionStorage'] as const) {
+  const current = (globalThis as Record<string, unknown>)[key] as Storage | undefined;
+  if (typeof current?.getItem !== 'function') {
+    Object.defineProperty(globalThis, key, {
+      value: storageDom.window[key],
+      configurable: true,
+      writable: true,
+    });
+  }
 }
 
 beforeAll(() => {

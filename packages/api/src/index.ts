@@ -27,6 +27,7 @@ import search from './search';
 import stage from './stage';
 import user from './user';
 import login from './v1/login';
+import oidcExchange from './v1/oidc-exchange';
 import profile from './v1/profile';
 import v1Search from './v1/search';
 import token from './v1/token';
@@ -52,6 +53,11 @@ export default function (config: Config, auth: Auth, storage: Storage, logger: L
 
   // Body parser must be registered before JWT middleware which pauses/resumes the stream
   registerBodyParser(app, config);
+
+  // the OIDC exchange endpoint must run before the JWT middleware: the CI
+  // bearer token is foreign and, under AES-legacy security, the auth
+  // middleware would answer a hard 401 before this route is reached
+  oidcExchange(app, auth, storage, config, logger);
 
   app.use(WebUrlsNamespace.endpoints, (_req, _res, next) => next('router'));
 

@@ -10,6 +10,13 @@ exports[`template > custom body after 1`] = `
         <title></title>
         <link rel="icon" href="http://domain.com/-/static/favicon.ico">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content=" web interface">
+        <meta property="og:title" content="">
+        <meta property="og:description" content=" web interface">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="">
+        <meta name="twitter:card" content="summary">
+        <link rel="alternate" type="application/rss+xml" title=" feed" href="http://domain.com/-/verdaccio/data/feed">
         <script src="http://domain.com/-/static/ui-options.js"></script>
         <link rel="stylesheet" href="http://domain.com/-/static/main.6f2f2cccce0c813b509f.css">
         
@@ -35,6 +42,13 @@ exports[`template > custom body before 1`] = `
         <title></title>
         <link rel="icon" href="http://domain.com/-/static/favicon.ico">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content=" web interface">
+        <meta property="og:title" content="">
+        <meta property="og:description" content=" web interface">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="">
+        <meta name="twitter:card" content="summary">
+        <link rel="alternate" type="application/rss+xml" title=" feed" href="http://domain.com/-/verdaccio/data/feed">
         <script src="http://domain.com/-/static/ui-options.js"></script>
         <link rel="stylesheet" href="http://domain.com/-/static/main.6f2f2cccce0c813b509f.css">
         
@@ -60,6 +74,13 @@ exports[`template > custom render 1`] = `
         <title></title>
         <link rel="icon" href="http://domain.com/-/static/favicon.ico">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content=" web interface">
+        <meta property="og:title" content="">
+        <meta property="og:description" content=" web interface">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="">
+        <meta name="twitter:card" content="summary">
+        <link rel="alternate" type="application/rss+xml" title=" feed" href="http://domain.com/-/verdaccio/data/feed">
         <script src="http://domain.com/-/static/ui-options.js"></script>
         <link rel="stylesheet" href="http://domain.com/-/static/main.6f2f2cccce0c813b509f.css">
         
@@ -85,6 +106,13 @@ exports[`template > custom title 1`] = `
         <title>foo title</title>
         <link rel="icon" href="http://domain.com/-/static/favicon.ico">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="foo title web interface">
+        <meta property="og:title" content="foo title">
+        <meta property="og:description" content="foo title web interface">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="foo title">
+        <meta name="twitter:card" content="summary">
+        <link rel="alternate" type="application/rss+xml" title="foo title feed" href="http://domain.com/-/verdaccio/data/feed">
         <script src="http://domain.com/-/static/ui-options.js"></script>
         <link rel="stylesheet" href="http://domain.com/-/static/main.6f2f2cccce0c813b509f.css">
         
@@ -110,6 +138,13 @@ exports[`template > meta scripts 1`] = `
         <title></title>
         <link rel="icon" href="http://domain.com/-/static/favicon.ico">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content=" web interface">
+        <meta property="og:title" content="">
+        <meta property="og:description" content=" web interface">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="">
+        <meta name="twitter:card" content="summary">
+        <link rel="alternate" type="application/rss+xml" title=" feed" href="http://domain.com/-/verdaccio/data/feed">
         <script src="http://domain.com/-/static/ui-options.js"></script>
         <link rel="stylesheet" href="http://domain.com/-/static/main.6f2f2cccce0c813b509f.css">
         <style>.someclass{font-size:10px;}</style>

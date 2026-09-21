@@ -11,13 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Use Node (latest)
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: '.nvmrc'
       - name: Docker test
         run: |
-            docker run -d -it --rm --name verdaccio -p 4873:4873 verdaccio/verdaccio:${{ inputs.docker_tag }}
+            docker run -d -it --rm --name verdaccio -p 4873:4873 verdaccio/verdaccio:${INPUTS_DOCKER_TAG}
+        env:
+          INPUTS_DOCKER_TAG: ${{ inputs.docker_tag }}
       - name: login    
         run: npx npm-cli-login -u test -p 1234 -e test@domain.test -r http://localhost:4873                 
       - name: Install

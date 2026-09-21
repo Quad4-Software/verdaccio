@@ -39,17 +39,17 @@
   "dependencies": {
     "@verdaccio/cli": "workspace:9.0.0-next-9.31",
     "@verdaccio/node-api": "workspace:9.0.0-next-9.31",
+    "@verdaccio/package-filter": "workspace:14.0.0-next-9.55",
     "@verdaccio/server": "workspace:9.0.0-next-9.31",
     "@verdaccio/ui-theme": "workspace:9.0.0-next-9.31",
     "verdaccio-audit": "workspace:14.0.0-next-9.31",
     "verdaccio-htpasswd": "workspace:14.0.0-next-9.31",
-    "verdaccio-oidc": "workspace:14.0.0-next-9.31",
-    "@verdaccio/package-filter": "workspace:14.0.0-next-9.55"
+    "verdaccio-oidc": "workspace:14.0.0-next-9.31"
   },
   "devDependencies": {
     "rimraf": "6.1.3",
-    "typedoc": "0.28.14",
-    "vite": "8.2.2"
+    "typedoc": "0.28.20",
+    "vite": "8.3.0"
   },
   "keywords": [
     "private",

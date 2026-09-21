@@ -12,6 +12,10 @@ export interface RemoteUser {
   error?: string;
   token?: {
     key: string;
+    // package scope of a generated token, merged from the stored token record
+    packages?: string[];
+    // tokens minted by the OIDC exchange skip OTP challenges
+    otpExempt?: boolean;
   };
 }
 

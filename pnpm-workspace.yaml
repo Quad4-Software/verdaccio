@@ -44,6 +44,19 @@ overrides:
   # See GHSA-5jgf-p345-68v8, GHSA-f65p-4m7j-42xc, GHSA-fph4-wmhf-6fwf,
   # and GHSA-jqff-g426-hqxp (fixed in 3.1.6).
   fast-uri: '3.1.6'
+  # Express 5.2.1 still pins vulnerable transitives; force the patches.
+  # qs DoS (GHSA-q8mj-m7cp-5q26, GHSA-x5fp-wj9c-mxmx, GHSA-4mjr-xmp4-gh2g,
+  # fixed in 6.16.0), body-parser limit bypass (GHSA-v422-hmwv-36x6, 2.3.0),
+  # path-to-regexp ReDoS (GHSA-27v5-c462-wpq7, 8.4.0).
+  # Scoped to express: msw needs its own older path-to-regexp for wildcard
+  # route matching.
+  'express@5>qs': '>=6.16.0'
+  'express@5>body-parser': '>=2.3.0'
+  'express@5>path-to-regexp': '>=8.4.0'
+  # yaml stack overflow via nested collections (GHSA-48c2-rrv3-qjmp, 1.10.3)
+  # and mdast-util-to-hast class attribute injection (GHSA-4fh9-h7wg-q85m, 13.2.1).
+  yaml: '>=1.10.3'
+  mdast-util-to-hast: '>=13.2.1'
 saveExact: true
 ignoreScripts: true
 preferFrozenLockfile: true

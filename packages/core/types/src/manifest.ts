@@ -33,6 +33,8 @@ export interface Token {
   key: string;
   cidr?: string[];
   readonly: boolean;
+  // minimatch patterns limiting which packages the token may touch
+  packages?: string[];
   created: number | string;
   updated?: number | string;
 }

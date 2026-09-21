@@ -74,6 +74,25 @@ export function getMatchedPackagesSpec(
   return;
 }
 
+/**
+ * Whether a package name matches at least one pattern of a generated token's
+ * package scope (`packages`/`scopes` from `npm token create`). Patterns use the
+ * same minimatch syntax as `packages:` rule keys; an empty or missing list
+ * means the token is unscoped and every package matches.
+ */
+export function matchPackagePatterns(pkgName: string, patterns?: string[]): boolean {
+  if (!Array.isArray(patterns) || patterns.length === 0) {
+    return true;
+  }
+  return patterns.some((pattern) => {
+    try {
+      return Boolean((minimatch.makeRe(pattern, { nocase: true }) as MMRegExp).exec(pkgName));
+    } catch {
+      return false;
+    }
+  });
+}
+
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }

@@ -234,6 +234,37 @@ export interface APITokenOptions {
   jwt?: JWTOptions;
 }
 
+/**
+ * A CI identity trusted to publish packages without stored credentials
+ * (npm-style OIDC trusted publishing). The CI job sends its OIDC token to the
+ * exchange endpoint and receives a short-lived, package-scoped registry token.
+ */
+export interface TrustedPublisher {
+  /** `github` (GitHub Actions) or `gitlab` (GitLab CI). */
+  provider: 'github' | 'gitlab';
+  /** GitHub `owner/repo` or GitLab `group/subgroup/project` path. */
+  repository: string;
+  /**
+   * GitHub: workflow file name (`release.yml`). GitLab: top-level CI file
+   * path (`.gitlab-ci.yml`). Optional; matched when set.
+   */
+  workflow?: string;
+  /** Deployment/CI environment name, matched when set. */
+  environment?: string;
+  /** Package names or patterns (`@scope/*`) the publisher may publish. */
+  packages: string[];
+  /** Registry account the exchanged token acts as. */
+  user: string;
+  /** Issuer override for self-hosted GitLab or GitHub Enterprise. */
+  issuer?: string;
+  /** JWKS URI override; defaults to the provider's well-known location. */
+  jwksUri?: string;
+  /** Expected `aud` claim; defaults to `npm:<request host>`. */
+  audience?: string;
+  /** Exchanged token lifetime (JWT `expiresIn` syntax), default `15m`. */
+  expiresIn?: string;
+}
+
 export interface Security {
   web: JWTOptions;
   api: APITokenOptions;
@@ -242,6 +273,8 @@ export interface Security {
    * Users carrying the $admin group (set by auth plugins) are admins as well.
    */
   admins?: string[];
+  /** npm-style OIDC trusted publishing entries. */
+  trustedPublishing?: TrustedPublisher[];
 }
 
 export type ReadmeOptions = 'latest' | 'tagged' | 'all';

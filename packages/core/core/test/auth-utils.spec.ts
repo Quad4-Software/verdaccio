@@ -151,4 +151,31 @@ describe('Auth Utilities', () => {
       );
     });
   });
+
+  describe('matchPackagePatterns', () => {
+    test('unscoped tokens match any package', () => {
+      expect(authUtils.matchPackagePatterns('foo')).toBe(true);
+      expect(authUtils.matchPackagePatterns('foo', [])).toBe(true);
+      expect(authUtils.matchPackagePatterns('foo', undefined)).toBe(true);
+    });
+
+    test('exact and wildcard patterns', () => {
+      expect(authUtils.matchPackagePatterns('foo', ['foo'])).toBe(true);
+      expect(authUtils.matchPackagePatterns('foo', ['bar', 'foo'])).toBe(true);
+      expect(authUtils.matchPackagePatterns('foo', ['bar'])).toBe(false);
+      expect(authUtils.matchPackagePatterns('@scope/pkg', ['@scope/*'])).toBe(true);
+      expect(authUtils.matchPackagePatterns('@other/pkg', ['@scope/*'])).toBe(false);
+      expect(authUtils.matchPackagePatterns('foo-bar', ['foo-*'])).toBe(true);
+    });
+
+    test('matching is case-insensitive like packages rules', () => {
+      expect(authUtils.matchPackagePatterns('Foo', ['foo'])).toBe(true);
+      expect(authUtils.matchPackagePatterns('@Scope/Pkg', ['@scope/*'])).toBe(true);
+    });
+
+    test('invalid patterns never match', () => {
+      expect(authUtils.matchPackagePatterns('foo', ['[invalid'])).toBe(false);
+      expect(authUtils.matchPackagePatterns('foo', ['[invalid', 'foo'])).toBe(true);
+    });
+  });
 });

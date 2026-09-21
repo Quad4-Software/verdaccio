@@ -1,0 +1,34 @@
+# zizmor configuration: audits that are informational for this repository are
+# silenced here so CI only reports actionable findings.
+rules:
+  # The e2e and smoke workflows intentionally install packages from the
+  # registry under test (`npm install --registry http://localhost:4873`); the
+  # installs are the test, not a supply-chain gap.
+  adhoc-packages:
+    ignore:
+      - x-e2e-angular-cli-workflow.yml
+      - x-e2e-audit-workflow.yml
+      - x-e2e-gatsbyjs-cli-workflow.yml
+      - x-e2e-jest-workflow.yml
+      - x-smok-test-docker.yml
+      - x-smok-test-module.yml
+      - smok-test-local-build.yml
+      - docker-proxy-apache-e2e.yml
+      - docker-proxy-nginx-e2e.yml
+      - yarn-ci.yml
+      - ci.yml
+  # the smoke test publishes to the registry under test on localhost; a real
+  # npm token cannot be minted there and trusted publishing does not apply
+  use-trusted-publishing:
+    ignore:
+      - x-smok-test-module.yml
+  # zizmor suggests its proposed `$/` prefix for repository-local actions;
+  # GitHub does not implement that syntax yet, so `./` stays.
+  self-repository:
+    ignore:
+      - changesets-pr.yml
+      - changesets.yml
+      - ci-win.yml
+      - ci.yml
+      - docker-publish.yml
+      - smok-test-local-build.yml

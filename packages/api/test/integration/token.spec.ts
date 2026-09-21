@@ -218,9 +218,9 @@ describe('token', () => {
     }
   );
 
-  // npm >= 11 granular access token options are accepted but not enforced; the
-  // token is still created (a warning is logged, including the client user
-  // agent) rather than failing.
+  // npm >= 11 granular access token options are accepted; package scope and the
+  // `read` permission are enforced, the rest is still ignored with a warning
+  // (including the client user agent) rather than failing.
   test.each([['token.yaml'], ['token.jwt.yaml']])(
     'should create a token ignoring unsupported granular options',
     async (conf) => {
@@ -238,9 +238,6 @@ describe('token', () => {
             password: credentials.password,
             readonly: false,
             cidr_whitelist: [],
-            packages_and_scopes_permission: 'read-only',
-            packages: ['@scope/pkg'],
-            scopes: ['@scope'],
             orgs: ['my-org'],
             expires: 30,
             description: 'ci token',
@@ -255,6 +252,125 @@ describe('token', () => {
       expect(resp.body).not.toHaveProperty('expires');
     }
   );
+
+  test.each([['token.yaml'], ['token.jwt.yaml']])(
+    'should reject malformed package scope options',
+    async (conf) => {
+      const app = await initializeServer(conf);
+      const credentials = { name: 'jota_token', password: 'secretPass' };
+      const token = await getNewToken(app, credentials);
+      const resp = await supertest(app)
+        .post('/-/npm/v1/tokens')
+        .set(HEADER_TYPE.CONTENT_TYPE, HEADERS.JSON)
+        .set(HEADERS.AUTHORIZATION, buildToken(TOKEN_BEARER, token))
+        .send(
+          JSON.stringify({
+            password: credentials.password,
+            packages: 'not-an-array',
+          })
+        );
+
+      expect(resp.body.error).toEqual(SUPPORT_ERRORS.PARAMETERS_NOT_VALID);
+    }
+  );
+
+  describe('package scoped tokens', () => {
+    const createScopedToken = async (app, credentials, token, body) => {
+      const resp = await supertest(app)
+        .post('/-/npm/v1/tokens')
+        .set(HEADER_TYPE.CONTENT_TYPE, HEADERS.JSON)
+        .set(HEADERS.AUTHORIZATION, buildToken(TOKEN_BEARER, token))
+        .send(JSON.stringify({ password: credentials.password, ...body }));
+      expect(resp.body.token).toBeDefined();
+      return resp.body.token;
+    };
+
+    test.each([['token.yaml'], ['token.jwt.yaml']])(
+      'should allow in-scope packages and reject out-of-scope ones',
+      async (conf) => {
+        const app = await initializeServer(conf);
+        const credentials = { name: 'jota_token', password: 'secretPass' };
+        const token = await getNewToken(app, credentials);
+        const scopedToken = await createScopedToken(app, credentials, token, {
+          packages: ['@token/scoped-allowed'],
+        });
+
+        await publishVersionWithToken(app, '@token/scoped-allowed', '1.0.0', scopedToken).expect(
+          HTTP_STATUS.CREATED
+        );
+
+        await publishVersionWithToken(app, '@token/scoped-denied', '1.0.0', scopedToken)
+          .expect(HEADER_TYPE.CONTENT_TYPE, HEADERS.JSON_CHARSET)
+          .expect(HTTP_STATUS.FORBIDDEN);
+      }
+    );
+
+    test.each([['token.yaml'], ['token.jwt.yaml']])(
+      'should cover every package under a scope entry',
+      async (conf) => {
+        const app = await initializeServer(conf);
+        const credentials = { name: 'jota_token', password: 'secretPass' };
+        const token = await getNewToken(app, credentials);
+        const scopedToken = await createScopedToken(app, credentials, token, {
+          scopes: ['@token'],
+        });
+
+        await publishVersionWithToken(app, '@token/scope-covered', '1.0.0', scopedToken).expect(
+          HTTP_STATUS.CREATED
+        );
+
+        // the package rules allow this name, so the denial proves token scope
+        await publishVersionWithToken(app, 'only-you-can-publish', '1.0.0', scopedToken)
+          .expect(HEADER_TYPE.CONTENT_TYPE, HEADERS.JSON_CHARSET)
+          .expect(HTTP_STATUS.FORBIDDEN);
+      }
+    );
+
+    test.each([['token.yaml'], ['token.jwt.yaml']])(
+      'should deny reads outside the package scope',
+      async (conf) => {
+        const app = await initializeServer(conf);
+        const credentials = { name: 'jota_token', password: 'secretPass' };
+        const token = await getNewToken(app, credentials);
+        await publishVersionWithToken(app, '@token/scope-read', '1.0.0', token).expect(
+          HTTP_STATUS.CREATED
+        );
+        const scopedToken = await createScopedToken(app, credentials, token, {
+          packages: ['@token/scope-read'],
+        });
+
+        await supertest(app)
+          .get('/@token%2fscope-read')
+          .set(HEADERS.AUTHORIZATION, buildToken(TOKEN_BEARER, scopedToken))
+          .expect(HTTP_STATUS.OK);
+
+        await publishVersionWithToken(app, '@token/scope-read-other', '1.0.0', token).expect(
+          HTTP_STATUS.CREATED
+        );
+        await supertest(app)
+          .get('/@token%2fscope-read-other')
+          .set(HEADERS.AUTHORIZATION, buildToken(TOKEN_BEARER, scopedToken))
+          .expect(HTTP_STATUS.FORBIDDEN);
+      }
+    );
+
+    test.each([['token.yaml'], ['token.jwt.yaml']])(
+      'should make a token readonly via packages_and_scopes_permission',
+      async (conf) => {
+        const app = await initializeServer(conf);
+        const credentials = { name: 'jota_token', password: 'secretPass' };
+        const token = await getNewToken(app, credentials);
+        const scopedToken = await createScopedToken(app, credentials, token, {
+          packages: ['@token/perm-read'],
+          packages_and_scopes_permission: 'read',
+        });
+
+        await publishVersionWithToken(app, '@token/perm-read', '1.0.0', scopedToken)
+          .expect(HEADER_TYPE.CONTENT_TYPE, HEADERS.JSON_CHARSET)
+          .expect(HTTP_STATUS.FORBIDDEN);
+      }
+    );
+  });
 
   describe('generated token authorization', () => {
     test.each([['token.yaml'], ['token.jwt.yaml']])(

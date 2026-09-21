@@ -94,6 +94,12 @@ export function requireOtp(options: RequireOtpOptions): RequestHandler {
       return next();
     }
 
+    // OIDC-exchanged tokens are OTP-exempt: the verified CI identity stands in
+    // for the second factor, and a CI job could never answer the challenge
+    if ((req as $RequestExtend).remote_user?.token?.otpExempt === true) {
+      return next();
+    }
+
     let record;
     try {
       record = await tfaStore.get(username);

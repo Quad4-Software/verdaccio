@@ -17,6 +17,8 @@ export type { RequestMetrics } from './middlewares/request-metrics';
 export { registerBodyParser } from './middlewares/body-parser';
 export { userAgent } from './middlewares/user-agent';
 export { webMiddleware, renderWebMiddleware, setSecurityWebHeaders } from './middlewares/web';
+export { packageJsonLd } from './middlewares/web/utils/seo';
+export type { PackageSeoResolver, SeoMeta } from './middlewares/web/utils/seo';
 export { errorReportingMiddleware, handleError } from './middlewares/error';
 export { getRequestOptions } from './middlewares/request-options';
 export {

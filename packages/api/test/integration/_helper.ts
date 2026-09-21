@@ -43,8 +43,12 @@ export async function initializeServer(configName: string): Promise<Application>
   return initializeServerHelper(config, [apiMiddleware], Storage);
 }
 
-export async function initializeServerWithContext(configName: string) {
+export async function initializeServerWithContext(
+  configName: string,
+  mutate?: (config: any) => void
+) {
   const configObject = getConf(configName);
+  mutate?.(configObject);
   const app = express();
   const logger = await setup(configObject.log ?? {});
   const config = new Config(configObject);

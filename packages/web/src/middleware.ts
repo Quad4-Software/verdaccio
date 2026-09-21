@@ -9,6 +9,7 @@ import { webMiddleware } from '@verdaccio/middleware';
 import defaultTheme from '@verdaccio/ui-theme';
 
 import webEndpointsApi from './api';
+import { buildPackageSeoResolver } from './seo';
 
 const debug = buildDebug('verdaccio:web:middleware');
 
@@ -60,6 +61,7 @@ export default async (config, auth, storage, logger) => {
       {
         tokenMiddleware: auth.webUIJWTmiddleware(),
         webEndpointsApi: webEndpointsApi(auth, storage, config),
+        getPackageSeo: buildPackageSeoResolver(storage, auth, config),
       },
       pluginOptions
     )

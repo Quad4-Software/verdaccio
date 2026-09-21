@@ -274,6 +274,25 @@ class Auth implements IAuthMiddleware, TokenEncryption, pluginUtils.IBasicAuth {
   }
 
   /**
+   * A generated token created with a package scope (`npm token create
+   * --packages`/`--scopes`) may only touch packages matching its patterns; the
+   * check lives here, before plugin delegation, so no allow_* plugin can widen
+   * it.
+   */
+  private isTokenScopeAllowed(packageName: string, user: RemoteUser): boolean {
+    return authUtils.matchPackagePatterns(packageName, user?.token?.packages);
+  }
+
+  private tokenScopeForbidden(packageName: string, user: RemoteUser, callback: Callback): boolean {
+    if (this.isTokenScopeAllowed(packageName, user)) {
+      return false;
+    }
+    debug('generated token of user %o is not scoped for package %o', user.name, packageName);
+    callback(errorUtils.getForbidden(API_ERROR.TOKEN_PACKAGE_SCOPE_MISMATCH));
+    return true;
+  }
+
+  /**
    * Allow user to access a package.
    */
   public allow_access(
@@ -286,6 +305,10 @@ class Auth implements IAuthMiddleware, TokenEncryption, pluginUtils.IBasicAuth {
       { name: packageName, version: packageVersion },
       authUtils.getMatchedPackagesSpec(packageName, this.config.packages)
     ) as AllowAccess & PackageAccess;
+
+    if (this.tokenScopeForbidden(packageName, user, callback)) {
+      return;
+    }
 
     // a packages rule can hide a package entirely: users outside the
     // visibility list get a 404 instead of an access error, and listings drop
@@ -344,6 +367,10 @@ class Auth implements IAuthMiddleware, TokenEncryption, pluginUtils.IBasicAuth {
       { name: packageName, version: packageVersion },
       authUtils.getMatchedPackagesSpec(packageName, this.config.packages)
     );
+
+    if (this.tokenScopeForbidden(packageName, user, callback)) {
+      return;
+    }
 
     debug('check unpublish permissions for user %o to package %o', user.name, packageName);
 
@@ -419,6 +446,10 @@ class Auth implements IAuthMiddleware, TokenEncryption, pluginUtils.IBasicAuth {
       authUtils.getMatchedPackagesSpec(packageName, this.config.packages)
     );
 
+    if (this.tokenScopeForbidden(packageName, user, callback)) {
+      return;
+    }
+
     debug('check stage permissions for user %o to package %o', user.name, packageName);
 
     const next = (): void => {
@@ -477,6 +508,10 @@ class Auth implements IAuthMiddleware, TokenEncryption, pluginUtils.IBasicAuth {
       { name: packageName, version: packageVersion },
       authUtils.getMatchedPackagesSpec(packageName, this.config.packages)
     );
+
+    if (this.tokenScopeForbidden(packageName, user, callback)) {
+      return;
+    }
 
     debug('check publish permissions for user %o to package %o', user.name, packageName);
 

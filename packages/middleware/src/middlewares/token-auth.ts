@@ -116,6 +116,13 @@ export function enforceGeneratedTokenMetadata(
         return next(errorUtils.getForbidden(API_ERROR.UNAUTHORIZED_ACCESS));
       }
 
+      // the allow_* checks read the package scope off remote_user; it comes
+      // from the stored record (not the signed payload) so scope changes take
+      // effect without re-issuing the token
+      if (remoteUser.token) {
+        remoteUser.token.packages = Array.isArray(token.packages) ? token.packages : undefined;
+      }
+
       return next();
     } catch (error: any) {
       logger.error({ error: error.msg }, 'generated token metadata lookup failed: @{error}');
