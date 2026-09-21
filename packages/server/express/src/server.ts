@@ -29,6 +29,7 @@ import {
   log,
   rateLimit,
   registerBodyParser,
+  setSecurityWebHeaders,
   userAgent,
   WebUrlsNamespace,
 } from '@verdaccio/middleware';
@@ -70,6 +71,10 @@ export const defineAPI = async function (config: IConfig, storage: Storage): Pro
   };
 
   app.use(dotfiles(config.server?.dotfiles ?? 'ignore'));
+
+  // security headers on every response, not only the web namespace: nosniff
+  // and frame denial matter for packuments and tarballs served to browsers
+  app.use(setSecurityWebHeaders);
 
   const errorReportingMiddlewareWrap = errorReportingMiddleware(logger);
 

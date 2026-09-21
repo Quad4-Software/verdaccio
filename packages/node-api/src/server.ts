@@ -11,7 +11,7 @@ import { getConfigParsed, getListenAddress } from '@verdaccio/config';
 import { logger, setup } from '@verdaccio/logger';
 import { ConfigYaml, HttpsConfKeyCert, HttpsConfPfx } from '@verdaccio/types';
 
-import { displayExperimentsInfoBox } from './experiments';
+import { displayExperimentsInfoBox, displaySecurityWarnings } from './experiments';
 
 export type ServerFactory = (config: ConfigYaml) => Promise<any>;
 
@@ -110,6 +110,7 @@ export async function initServer(
   const logger = await setup(config?.log as any);
   const addr = getListenAddress(port ?? config?.listen, logger);
   displayExperimentsInfoBox(config.flags);
+  displaySecurityWarnings(config);
 
   const app = await serverFactory(config);
   const httpServer = createServerFactory(config, addr, app);
@@ -179,6 +180,7 @@ export async function runServer(
   const configurationParsed = getConfigParsed(config);
   await setup(configurationParsed.log as any);
   displayExperimentsInfoBox(configurationParsed.flags);
+  displaySecurityWarnings(configurationParsed);
   const addr = getListenAddress(configurationParsed.listen, logger);
   const app = await serverFactory(configurationParsed);
   return createServerFactory(configurationParsed, addr, app);

@@ -54,6 +54,34 @@ test('should get xss', async () => {
   expect(res.get(HEADERS.XSS)).toEqual('1; mode=block');
 });
 
+test('should get referrer policy', async () => {
+  const app = getApp([]);
+  // @ts-ignore
+  app.use(setSecurityWebHeaders);
+  app.get('/sec', (req, res) => {
+    res.status(HTTP_STATUS.OK).json({});
+  });
+
+  const res = await request(app).get('/sec').expect(HTTP_STATUS.OK);
+  expect(res.get(HEADERS.REFERRER_POLICY)).toEqual('strict-origin-when-cross-origin');
+});
+
+test('should keep a referrer policy already set upstream', async () => {
+  const app = getApp([]);
+  app.use((req, res, next) => {
+    res.setHeader(HEADERS.REFERRER_POLICY, 'no-referrer');
+    next();
+  });
+  // @ts-ignore
+  app.use(setSecurityWebHeaders);
+  app.get('/sec', (req, res) => {
+    res.status(HTTP_STATUS.OK).json({});
+  });
+
+  const res = await request(app).get('/sec').expect(HTTP_STATUS.OK);
+  expect(res.get(HEADERS.REFERRER_POLICY)).toEqual('no-referrer');
+});
+
 test('should set own content security policy', async () => {
   const csp = 'default "self"; connect-src "self" https://other.example.com';
   const app = getApp([]);

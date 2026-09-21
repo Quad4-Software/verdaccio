@@ -1115,6 +1115,9 @@ importers:
       '@verdaccio/core':
         specifier: workspace:9.0.0-next-9.31
         version: link:../../core/core
+      '@verdaccio/middleware':
+        specifier: workspace:9.0.0-next-9.31
+        version: link:../../middleware
       '@verdaccio/url':
         specifier: workspace:14.0.0-next-9.31
         version: link:../../core/url

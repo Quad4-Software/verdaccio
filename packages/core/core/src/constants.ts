@@ -50,6 +50,7 @@ export const HEADERS = {
   CSP: 'Content-Security-Policy',
   CTO: 'X-Content-Type-Options',
   XSS: 'X-XSS-Protection',
+  REFERRER_POLICY: 'Referrer-Policy',
   CLIENT: 'X-Client',
   POWERED_BY: 'X-Powered-By',
   RATELIMIT_LIMIT: 'X-RateLimit-Limit',

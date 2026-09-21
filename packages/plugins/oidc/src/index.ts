@@ -8,6 +8,7 @@ import { getApiToken } from '@verdaccio/auth';
 import type { TokenEncryption } from '@verdaccio/auth';
 import { createRemoteUser } from '@verdaccio/config';
 import { API_ERROR, errorUtils, pluginUtils, reqUtils } from '@verdaccio/core';
+import { rateLimit } from '@verdaccio/middleware';
 import { getPublicUrl } from '@verdaccio/url';
 import type { Config, Logger, RemoteUser } from '@verdaccio/types';
 
@@ -222,6 +223,8 @@ export default class OidcPlugin
     });
 
     const router = Router(); /* eslint new-cap: 0 */
+    // same limiter the built-in login/token routes use
+    const loginRateLimit = rateLimit((this.options.config as Config)?.userRateLimit);
 
     router.get('/-/oauth/config', (_req, res) => {
       res.json({
@@ -240,7 +243,7 @@ export default class OidcPlugin
     });
 
     // npm web-authn contract: POST /-/v1/login -> { loginUrl, doneUrl }
-    router.post('/-/v1/login', (req: Request, res) => {
+    router.post('/-/v1/login', loginRateLimit, (req: Request, res) => {
       const sessionId = this.state.createCliSession();
       const base = baseUrl(this.options.config as Config, req);
       res.json({
@@ -250,7 +253,7 @@ export default class OidcPlugin
     });
 
     // the login page posts credentials here; mirrors /-/v1/login_cli/:sessionId
-    router.post('/-/v1/login_cli/:sessionId', (req: Request, res) => {
+    router.post('/-/v1/login_cli/:sessionId', loginRateLimit, (req: Request, res) => {
       this.handleCliPassword(req, res, auth).catch((err) => {
         this.logger.error({ err: err?.message }, 'cli login failed: @{err}');
         res.status(500).json({ error: 'login failed' });
@@ -273,7 +276,7 @@ export default class OidcPlugin
     });
 
     // explicit approval gate between finishing OIDC and releasing the token
-    router.post('/-/oauth/confirm/:confirmId', (req: Request, res) => {
+    router.post('/-/oauth/confirm/:confirmId', loginRateLimit, (req: Request, res) => {
       const confirmId = routeParam(req.params.confirmId);
       const confirm = confirmId ? this.state.consumePendingConfirm(confirmId) : undefined;
       if (!confirm || !this.state.completeCliSession(confirm.sessionId, confirm.token)) {

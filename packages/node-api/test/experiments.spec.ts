@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { logger } from '@verdaccio/logger';
 
-import { displayExperimentsInfoBox } from '../src/experiments';
+import { displayExperimentsInfoBox, displaySecurityWarnings } from '../src/experiments';
 
 vi.mock('@verdaccio/logger', () => ({
   logger: {
@@ -42,5 +42,31 @@ describe('displayExperimentsInfoBox', () => {
     displayExperimentsInfoBox({ token: false });
     expect(logger.warn).toHaveBeenCalledOnce();
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('is disabled'));
+  });
+});
+
+describe('displaySecurityWarnings', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test('warns when no security section is configured (legacy default)', () => {
+    displaySecurityWarnings({});
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('security.api.legacy'));
+  });
+
+  test('warns when legacy is explicit without jwt', () => {
+    displaySecurityWarnings({ security: { api: { legacy: true } } });
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('security.api.legacy'));
+  });
+
+  test('stays quiet when jwt mode is configured', () => {
+    displaySecurityWarnings({ security: { api: { jwt: { sign: {} } } } });
+    expect(logger.warn).not.toHaveBeenCalled();
+  });
+
+  test('warns when legacy and jwt are both set', () => {
+    displaySecurityWarnings({ security: { api: { legacy: true, jwt: { sign: {} } } } });
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('takes precedence'));
   });
 });

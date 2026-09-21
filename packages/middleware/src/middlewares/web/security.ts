@@ -35,5 +35,12 @@ export function setSecurityWebHeaders(_req, res, next): void {
     debug('Missing or invalid X-XSS-Protection header; setting to "1; mode=block"');
     res.header(HEADERS.XSS, '1; mode=block');
   }
+
+  // keep full URLs out of the Referer header on cross-origin navigations and
+  // requests, so tokens embedded in paths cannot leak to third parties
+  // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy
+  if (!res.getHeader(HEADERS.REFERRER_POLICY)) {
+    res.header(HEADERS.REFERRER_POLICY, 'strict-origin-when-cross-origin');
+  }
   next();
 }
