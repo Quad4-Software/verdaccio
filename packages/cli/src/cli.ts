@@ -4,6 +4,7 @@ import { pkgUtils, warningUtils } from '@verdaccio/core';
 
 import { InfoCommand } from './commands/info';
 import { InitCommand } from './commands/init';
+import { SetupLinkCommand } from './commands/setup-link';
 import { VersionCommand } from './commands/version';
 import type { CliRuntimeOptions } from './runtime';
 import { configureCli } from './runtime';
@@ -44,6 +45,7 @@ export function runCli(options: CliRuntimeOptions = {}): Promise<void> {
 
   cli.register(InfoCommand);
   cli.register(InitCommand);
+  cli.register(SetupLinkCommand);
   cli.register(VersionCommand);
 
   process.on('uncaughtException', function (err) {

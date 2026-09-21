@@ -11,6 +11,7 @@ export enum MessageType {
   Login = 'Login',
   ChangePassword = 'ChangePassword',
   AddUser = 'AddUser',
+  SetupAdmin = 'SetupAdmin',
   Success = 'Success',
 }
 

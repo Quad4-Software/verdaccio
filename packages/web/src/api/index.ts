@@ -6,6 +6,7 @@ import { hasLogin } from '../web-utils';
 import packageApi from './package';
 import readme from './readme';
 import search from './search';
+import setup from './setup';
 import sidebar from './sidebar';
 import user from './user';
 
@@ -25,6 +26,7 @@ export default (auth, storage, config) => {
   route.use(WebUrlsNamespace.data, readme(storage, auth, config));
   if (hasLogin(config)) {
     route.use(WebUrlsNamespace.sec, user(auth, config, storage));
+    route.use(WebUrlsNamespace.sec, setup(auth, config));
   }
   return route;
 };

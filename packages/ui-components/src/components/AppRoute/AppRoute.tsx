@@ -13,6 +13,7 @@ const Front = loadable(() => import('../../pages/Front'));
 const Login = loadable(() => import('../../pages/Security/Login'));
 const Success = loadable(() => import('../../pages/Security/Success'));
 const AddUser = loadable(() => import('../../pages/Security/AddUser'));
+const SetupAdmin = loadable(() => import('../../pages/Security/SetupAdmin'));
 const ChangePassword = loadable(() => import('../../pages/Security/ChangePassword'));
 const StageList = loadable(() => import('../../pages/Stage/StageList'));
 const StageDetail = loadable(() => import('../../pages/Stage/StageDetail'));
@@ -53,6 +54,7 @@ const AppRoute: React.FC = () => {
           <RouterRoute element={<Login />} path={Route.LOGIN} />
           <RouterRoute element={<Success />} path={Route.SUCCESS} />
           {createUserEnabled && <RouterRoute element={<AddUser />} path={Route.ADD_USER} />}
+          <RouterRoute element={<SetupAdmin />} path={Route.SETUP} />
           {changePasswordEnabled && (
             <RouterRoute element={<ChangePassword />} path={Route.CHANGE_PASSWORD} />
           )}

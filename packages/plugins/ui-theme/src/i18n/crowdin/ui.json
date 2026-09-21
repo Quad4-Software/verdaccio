@@ -251,6 +251,7 @@
       "messageLogin": "You have logged in successfully and may close this window",
       "messageChangePassword": "You have changed your password successfully and may close this window",
       "messageAddUser": "You have created a new user successfully and may close this window",
+      "messageSetupAdmin": "The admin account is ready",
       "submit": "Go to Home Page"
     },
     "addUser": {
@@ -271,6 +272,16 @@
       "confirmPassword": "Confirm New Password",
       "submit": "Change Password"
     },
+    "setup": {
+      "title": "Create admin account",
+      "description": "This link works once. It expires when the timer runs out.",
+      "expires": "Expires in {{time}}",
+      "expired": "This setup link is invalid or expired. If there is still no admin account, generate a new link with verdaccio setup-link",
+      "missing": "Open the setup link from the server logs.",
+      "submit": "Create admin account",
+      "password": "Password",
+      "confirmPassword": "Confirm password"
+    },
     "error": {
       "username-or-password-cant-be-empty": "Username or password can't be empty!",
       "username-min-length": "Username must be at least {{length}} characters long",
@@ -281,6 +292,7 @@
       "unable-to-change-password": "Unable to change password",
       "unable-to-login": "Unable to login",
       "password-mismatch": "Passwords do not match",
+      "password-min-length": "Password must be at least {{length}} characters",
       "invalid-credentials": "Invalid username or password",
       "invalid-next-param": "Missing or invalid next parameter in login request"
     }

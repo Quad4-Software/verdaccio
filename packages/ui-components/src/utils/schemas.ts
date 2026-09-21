@@ -2,6 +2,7 @@ import * as yup from 'yup';
 
 export const USERNAME_MIN_LENGTH = 2;
 export const PASSWORD_MIN_LENGTH = 2;
+export const SETUP_PASSWORD_MIN_LENGTH = 12;
 
 // All messages are i18n keys; the form fields translate them on render with
 // t(message, { length }) so they follow the selected language.
@@ -45,3 +46,17 @@ export const changePasswordSchema = yup.object({
 });
 
 export type ChangePasswordFormValues = yup.InferType<typeof changePasswordSchema>;
+
+export const setupAdminSchema = yup.object({
+  username: usernameSchema,
+  password: yup
+    .string()
+    .required('form-validation.required-field')
+    .min(SETUP_PASSWORD_MIN_LENGTH, 'security.error.password-min-length'),
+  confirmPassword: yup
+    .string()
+    .required('form-validation.required-field')
+    .oneOf([yup.ref('password')], 'security.error.password-mismatch'),
+});
+
+export type SetupAdminFormValues = yup.InferType<typeof setupAdminSchema>;

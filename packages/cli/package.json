@@ -49,6 +49,7 @@
     "@verdaccio/logger": "workspace:9.0.0-next-9.31",
     "@verdaccio/node-api": "workspace:9.0.0-next-9.31",
     "@verdaccio/server": "workspace:9.0.0-next-9.31",
+    "verdaccio-htpasswd": "workspace:14.0.0-next-9.31",
     "chalk": "4.1.2",
     "clipanion": "4.0.0-rc.4",
     "semver": "7.8.5"

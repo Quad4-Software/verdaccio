@@ -11,6 +11,8 @@ export enum WebUrls {
   user_signup = '/signup',
   search = '/search/:anything',
   reset_password = '/reset_password',
+  setup = '/setup',
+  setup_status = '/setup/status',
 }
 
 /**
