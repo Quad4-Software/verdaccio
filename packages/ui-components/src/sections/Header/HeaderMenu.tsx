@@ -35,6 +35,7 @@ const HeaderMenu: React.FC<Props> = ({
   const navigate = useNavigate();
   const { configOptions } = useConfig();
   const stageEnabled = configOptions?.flags?.stage;
+  const tfaEnabled = configOptions?.flags?.tfa;
   return (
     <>
       <IconButton
@@ -72,6 +73,18 @@ const HeaderMenu: React.FC<Props> = ({
             }}
           >
             {t('stage.menu')}
+          </MenuItem>
+        )}
+        {tfaEnabled && (
+          <MenuItem
+            data-testid="twoFactorMenuItem"
+            id="twoFactorMenuItem"
+            onClick={() => {
+              onLoggedInMenuClose();
+              navigate(Route.TWO_FACTOR);
+            }}
+          >
+            {t('security.tfa.menu')}
           </MenuItem>
         )}
         <MenuItem data-testid="logOutDialogIcon" id="logOutDialogIcon" onClick={onLogout}>

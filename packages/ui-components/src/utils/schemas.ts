@@ -60,3 +60,22 @@ export const setupAdminSchema = yup.object({
 });
 
 export type SetupAdminFormValues = yup.InferType<typeof setupAdminSchema>;
+
+export const tfaEnableSchema = yup.object({
+  password: passwordSchema,
+  mode: yup
+    .string()
+    .oneOf(['auth-only', 'auth-and-writes'], 'form-validation.required-field')
+    .required('form-validation.required-field'),
+});
+
+export type TfaEnableFormValues = yup.InferType<typeof tfaEnableSchema>;
+
+export const tfaVerifySchema = yup.object({
+  code: yup
+    .string()
+    .required('form-validation.required-field')
+    .matches(/^\d{6}$/, 'security.tfa.error.code-format'),
+});
+
+export type TfaVerifyFormValues = yup.InferType<typeof tfaVerifySchema>;

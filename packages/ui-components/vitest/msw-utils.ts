@@ -232,3 +232,66 @@ export const mockLogin = (status = 200, customResponse?: object) =>
       }
     );
   }) as unknown as MswResolver);
+
+/**
+ * Mocks the npm profile endpoint (GET/POST /-/npm/v1/user) that the two-factor
+ * enrolment flow drives. Mirrors the server contract in
+ * packages/api/src/v1/profile.ts: { mode, password } starts enrolment and
+ * answers an otpauth:// URI, [code] finishes it and answers recovery codes,
+ * { mode: 'disable', password } turns it off.
+ */
+// module scope on purpose: msw registers handlers once per test file, so state
+// has to live outside the handler and be reset between tests
+let profileTfaEnabled = false;
+export const resetProfileMock = () => {
+  profileTfaEnabled = false;
+};
+
+export const mockProfile = () => {
+  return [
+    http.get(`${BASE_URL}/-/npm/v1/user`, (() => {
+      debug('Received profile request');
+      return HttpResponse.json({
+        name: 'testuser',
+        tfa: profileTfaEnabled ? { mode: 'auth-only', pending: false } : false,
+        email: '',
+        email_verified: false,
+        created: '',
+        updated: '',
+        cidr_whitelist: null,
+        fullname: '',
+      });
+    }) as unknown as MswResolver),
+    http.post(`${BASE_URL}/-/npm/v1/user`, (async ({ request }) => {
+      const body = (await request.json()) as { tfa?: any };
+      const tfa = body?.tfa;
+
+      if (Array.isArray(tfa)) {
+        if (tfa[0] === '123456') {
+          profileTfaEnabled = true;
+          return HttpResponse.json({ tfa: ['recovery-code-1', 'recovery-code-2'] });
+        }
+        return new HttpResponse(JSON.stringify({ error: 'invalid one-time password' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (tfa?.password === 'fail') {
+        return new HttpResponse(JSON.stringify({ error: 'invalid credentials' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (tfa?.mode === 'disable') {
+        profileTfaEnabled = false;
+        return HttpResponse.json({ tfa: false });
+      }
+
+      return HttpResponse.json({
+        tfa: 'otpauth://totp/Verdaccio:testuser?secret=JBSWY3DPEHPK3PXP&issuer=Verdaccio',
+      });
+    }) as unknown as MswResolver),
+  ];
+};

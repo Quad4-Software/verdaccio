@@ -11,6 +11,7 @@ export enum Route {
   ADD_USER = '/-/web/add-user',
   CHANGE_PASSWORD = '/-/web/change-password',
   SETUP = '/-/web/setup',
+  TWO_FACTOR = '/-/web/two-factor',
   // Staged publish workflow (`npm stage`), behind the `stage` flag
   STAGE = '/-/web/stage',
   STAGE_DETAIL = '/-/web/stage/:stageId',
@@ -27,6 +28,7 @@ export enum APIRoute {
   RESET_PASSWORD = '/-/verdaccio/sec/reset_password',
   SETUP = '/-/verdaccio/sec/setup',
   SETUP_STATUS = '/-/verdaccio/sec/setup/status',
+  PROFILE = '/-/npm/v1/user',
   CONFIG = '/-/verdaccio/packages',
   PACKAGES = '/-/verdaccio/data/packages',
   SEARCH = '/-/verdaccio/data/search/', // :value

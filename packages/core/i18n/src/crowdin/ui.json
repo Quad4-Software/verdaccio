@@ -249,6 +249,43 @@
       "password": "Password",
       "confirmPassword": "Confirm password"
     },
+    "tfa": {
+      "menu": "Two-factor authentication",
+      "title": "Two-factor authentication",
+      "description": "Protect your account with a one-time code from an authenticator app.",
+      "mustBeLoggedIn": "Log in to manage two-factor authentication.",
+      "login": "Log in",
+      "password": "Password",
+      "enable": "Set up two-factor authentication",
+      "disable": "Turn off two-factor authentication",
+      "mode": {
+        "auth-only": "Log in only",
+        "auth-and-writes": "Log in and publishing"
+      },
+      "status": {
+        "enabled": "Two-factor authentication is on ({{mode}}).",
+        "pending": "Setup was started but not finished. Setting up again replaces the pending secret."
+      },
+      "enrol": {
+        "title": "Scan the code",
+        "scanQr": "Scan this code with your authenticator app, then enter the 6-digit code it shows.",
+        "qrAlt": "QR code for the authenticator app",
+        "manualKey": "Cannot scan? Enter this key manually:",
+        "code": "Authentication code",
+        "verify": "Verify and enable"
+      },
+      "recoveryCodes": {
+        "title": "Recovery codes",
+        "description": "Save these codes somewhere safe. Each works once if you lose your authenticator.",
+        "done": "Done"
+      },
+      "error": {
+        "unable-to-enable": "Unable to start two-factor setup",
+        "unable-to-disable": "Unable to turn off two-factor authentication",
+        "invalid-code": "The code is invalid",
+        "code-format": "Enter the 6-digit code"
+      }
+    },
     "error": {
       "username-or-password-cant-be-empty": "Username or password can't be empty!",
       "username-min-length": "Username must be at least {{length}} characters long",
