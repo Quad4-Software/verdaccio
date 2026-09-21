@@ -6,7 +6,12 @@ import { constants, pluginUtils } from '@verdaccio/core';
 import { unlockFile } from '@verdaccio/file-locking';
 import type { Callback, Logger } from '@verdaccio/types';
 
-import { consumeSetupLink, inspectSetupLink, issueSetupLink, validateSetupAccount } from './setup-link';
+import {
+  consumeSetupLink,
+  inspectSetupLink,
+  issueSetupLink,
+  validateSetupAccount,
+} from './setup-link';
 import type { HtpasswdHashConfig } from './utils';
 import {
   DEFAULT_BCRYPT_ROUNDS,

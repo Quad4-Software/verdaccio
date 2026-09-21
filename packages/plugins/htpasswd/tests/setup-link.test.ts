@@ -94,10 +94,13 @@ describe('setup link', () => {
     const dir = mkdtempSync(join(tmpdir(), 'verdaccio-setup-'));
     dirs.push(dir);
     const file = join(dir, 'htpasswd');
-    const wrapper = new HTPasswd({ file, max_users: -1 } as any, {
-      logger: { info() {}, warn() {}, error() {} },
-      config: { configPath: join(dir, 'config.yaml') },
-    } as unknown as pluginUtils.PluginOptions);
+    const wrapper = new HTPasswd(
+      { file, max_users: -1 } as any,
+      {
+        logger: { info() {}, warn() {}, error() {} },
+        config: { configPath: join(dir, 'config.yaml') },
+      } as unknown as pluginUtils.PluginOptions
+    );
 
     await new Promise<void>((resolve, reject) => {
       wrapper.bootstrapAdmin('admin', 'long-enough-password', (err, ok) => {

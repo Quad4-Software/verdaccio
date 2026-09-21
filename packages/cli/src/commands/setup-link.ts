@@ -40,9 +40,7 @@ export class SetupLinkCommand extends Command {
     }
 
     const expires = new Date(issued.expires).toISOString();
-    this.context.stdout.write(
-      `setup link expires at ${expires} and works once\n${issued.link}\n`
-    );
+    this.context.stdout.write(`setup link expires at ${expires} and works once\n${issued.link}\n`);
     return 0;
   }
 }

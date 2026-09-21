@@ -4,12 +4,7 @@ import { Router } from 'express';
 
 import type { Auth } from '@verdaccio/auth';
 import type { VerdaccioError } from '@verdaccio/core';
-import {
-  HEADERS,
-  HTTP_STATUS,
-  errorUtils,
-  validationUtils,
-} from '@verdaccio/core';
+import { HEADERS, HTTP_STATUS, errorUtils, validationUtils } from '@verdaccio/core';
 import { WebUrls, rateLimit } from '@verdaccio/middleware';
 import type { Config, JWTSignOptions, RemoteUser } from '@verdaccio/types';
 
@@ -90,7 +85,9 @@ function addSetupApi(auth: Auth, config: Config): Router {
         validationUtils.validatePassword(password, config?.server?.passwordValidationRegex) ===
         false
       ) {
-        return next(errorUtils.getCode(HTTP_STATUS.BAD_REQUEST, 'password does not meet the policy'));
+        return next(
+          errorUtils.getCode(HTTP_STATUS.BAD_REQUEST, 'password does not meet the policy')
+        );
       }
 
       const consumed = plugin.consumeSetup(token);

@@ -20,7 +20,7 @@ plugins: /verdaccio/plugins
 # https://verdaccio.org/docs/webui
 web:
   title: Registry
-  primaryColor: "#0A0A0B"
+  primaryColor: '#0A0A0B'
   gravatar: false
   darkMode: true
   showThemeSwitch: true
