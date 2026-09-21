@@ -40,7 +40,12 @@ jobs:
           # download-only token, exposed under the name crowdin.yaml expects
           CROWDIN_VERDACCIO_API_KEY: ${{ secrets.CROWDIN_VERDACCIO_API_KEY }}
           CONTEXT: production
-        run: pnpm crowdin:download
+        run: |
+            if [ -z "$CROWDIN_VERDACCIO_API_KEY" ]; then
+              echo "::notice::CROWDIN_VERDACCIO_API_KEY not set; skipping crowdin:download"
+            else
+              pnpm crowdin:download
+            fi
 
       - name: Detect Docker Hub credentials
         id: dockerhub

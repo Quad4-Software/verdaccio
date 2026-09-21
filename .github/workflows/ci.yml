@@ -333,7 +333,12 @@ jobs:
         env:
           CROWDIN_VERDACCIO_API_KEY: ${{ secrets.CROWDIN_VERDACCIO_API_KEY }}
           CONTEXT: production
-        run: pnpm crowdin:sync
+        run: |
+            if [ -z "$CROWDIN_VERDACCIO_API_KEY" ]; then
+              echo "::notice::CROWDIN_VERDACCIO_API_KEY not set; skipping crowdin:sync"
+            else
+              pnpm crowdin:sync
+            fi
   cleanup:
     needs: [test, e2e-cli, e2e-ui]
     if: always()

@@ -35,7 +35,12 @@ jobs:
         env:
           CROWDIN_VERDACCIO_API_KEY: ${{ secrets.CROWDIN_VERDACCIO_API_KEY }}
           CONTEXT: production
-        run: pnpm crowdin:download
+        run: |
+            if [ -z "$CROWDIN_VERDACCIO_API_KEY" ]; then
+              echo "::notice::CROWDIN_VERDACCIO_API_KEY not set; skipping crowdin:download"
+            else
+              pnpm crowdin:download
+            fi
       - name: build
         run: pnpm build
       - name: create versions
@@ -74,7 +79,12 @@ jobs:
         env:
           CROWDIN_VERDACCIO_API_KEY: ${{ secrets.CROWDIN_VERDACCIO_API_KEY }}
           CONTEXT: production
-        run: pnpm crowdin:download
+        run: |
+            if [ -z "$CROWDIN_VERDACCIO_API_KEY" ]; then
+              echo "::notice::CROWDIN_VERDACCIO_API_KEY not set; skipping crowdin:download"
+            else
+              pnpm crowdin:download
+            fi
       - name: build
         run: pnpm build
       - name: publish
