@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 
 import { renderWith, screen, waitFor } from '../../test/test-react-testing-library';
+import type * as urlUtils from '../../utils/url';
 import type { StagePackageVersion } from './types';
 import {
   approveStagedVersion,
@@ -20,7 +21,7 @@ vi.mock('../../store/api', () => ({
 
 const downloadFileMock = vi.fn();
 vi.mock('../../utils/url', async () => {
-  const actual = await vi.importActual<typeof import('../../utils/url')>('../../utils/url');
+  const actual = await vi.importActual<typeof urlUtils>('../../utils/url');
   return { ...actual, downloadFile: (...args: unknown[]) => downloadFileMock(...args) };
 });
 
