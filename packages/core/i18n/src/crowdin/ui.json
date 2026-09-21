@@ -210,7 +210,9 @@
   "security": {
     "login": {
       "createUser": "Create User",
-      "noUserQuestion": "Don't have an account?"
+      "noUserQuestion": "Don't have an account?",
+      "or": "or",
+      "loginWithSso": "Login with SSO"
     },
     "success": {
       "title": "Success",

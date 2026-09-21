@@ -29,6 +29,9 @@ export enum APIRoute {
   SETUP = '/-/verdaccio/sec/setup',
   SETUP_STATUS = '/-/verdaccio/sec/setup/status',
   PROFILE = '/-/npm/v1/user',
+  // served by the oidc plugin when the middleware is enabled; a 404 or network
+  // error just hides the SSO button
+  OIDC_CONFIG = '/-/oauth/config',
   CONFIG = '/-/verdaccio/packages',
   PACKAGES = '/-/verdaccio/data/packages',
   SEARCH = '/-/verdaccio/data/search/', // :value

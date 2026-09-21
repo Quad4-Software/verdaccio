@@ -3,6 +3,7 @@ import React from 'react';
 import { Route as RouterRoute, Routes } from 'react-router';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { setOidcEnabled } from '../../../vitest/msw-utils';
 import { server } from '../../../vitest/server';
 import storage from '../../store/storage';
 import {
@@ -27,6 +28,7 @@ describe('<Login /> component', () => {
     cleanup();
     storage.removeItem('token');
     storage.removeItem('username');
+    setOidcEnabled(false);
   });
 
   afterEach(() => {
@@ -201,6 +203,31 @@ describe('<Login /> component', () => {
     });
     expect(screen.queryByTestId('success-page')).not.toBeInTheDocument();
     expect(storage.getItem('token')).toBeNull();
+  });
+
+  test('should show the SSO button when the oidc plugin is enabled', async () => {
+    setOidcEnabled(true);
+
+    await act(async () => {
+      renderWithRouter(<Login />, Route.LOGIN, [LOGIN_URL_WITH_NEXT]);
+    });
+
+    const button = await screen.findByTestId('login-sso-button');
+    expect(button).toHaveTextContent('Login with SSO');
+    expect(button.getAttribute('href')).toBe(
+      `http://localhost:9000/-/oauth/authorize?next=${encodeURIComponent(VALID_NEXT)}`
+    );
+  });
+
+  test('should hide the SSO button when the oidc plugin is not installed', async () => {
+    await act(async () => {
+      renderWithRouter(<Login />, Route.LOGIN, [LOGIN_URL_WITH_NEXT]);
+    });
+
+    expect(screen.getByTestId('login-dialog-form-login-button')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId('login-sso-button')).not.toBeInTheDocument();
+    });
   });
 
   test('a dead server shows the generic failure, never "invalid credentials"', async () => {

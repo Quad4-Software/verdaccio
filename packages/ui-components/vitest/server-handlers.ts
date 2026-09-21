@@ -3,6 +3,7 @@ import {
   mockCliLogin,
   mockHomePackages,
   mockLogin,
+  mockOidcConfig,
   mockProfile,
   mockReadme,
   mockResetPassword,
@@ -29,6 +30,7 @@ export const handlers = [
   mockCliLogin(),
   mockAddUser(),
   mockTarball(),
+  mockOidcConfig(),
   ...mockProfile(),
   // Error presets
   mockSidebar('JSONStream', null, 401),

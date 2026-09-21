@@ -43,6 +43,7 @@
     "@verdaccio/ui-theme": "workspace:9.0.0-next-9.31",
     "verdaccio-audit": "workspace:14.0.0-next-9.31",
     "verdaccio-htpasswd": "workspace:14.0.0-next-9.31",
+    "verdaccio-oidc": "workspace:14.0.0-next-9.31",
     "@verdaccio/package-filter": "workspace:14.0.0-next-9.55"
   },
   "devDependencies": {

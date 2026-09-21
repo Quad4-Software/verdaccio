@@ -295,3 +295,27 @@ export const mockProfile = () => {
     }) as unknown as MswResolver),
   ];
 };
+
+/**
+ * Mocks the oidc plugin config endpoint (GET /-/oauth/config) that decides
+ * whether the SSO button renders on the login forms.
+ */
+let oidcEnabled = false;
+export const setOidcEnabled = (enabled: boolean) => {
+  oidcEnabled = enabled;
+};
+
+export const mockOidcConfig = () =>
+  http.get(`${BASE_URL}/-/oauth/config`, (() => {
+    if (!oidcEnabled) {
+      return new HttpResponse(JSON.stringify({ error: 'not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return HttpResponse.json({
+      enabled: true,
+      loginButtonText: 'Login with SSO',
+      authorize: '/-/oauth/authorize',
+    });
+  }) as unknown as MswResolver);

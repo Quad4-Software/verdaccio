@@ -109,6 +109,7 @@ const Login: React.FC = () => {
             handleSubmit={handleSubmit}
             isSubmitting={isSubmitting}
             isValid={isValid}
+            next={next}
             onSubmit={onSubmit}
             register={register}
           />

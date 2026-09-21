@@ -12,6 +12,7 @@ import type { Theme } from '../../';
 import { getConfiguration } from '../../configuration';
 import { Route } from '../../utils';
 import LoginDialogFormError from '../LoginDialog/LoginDialogFormError';
+import OidcLoginButton from './OidcLoginButton';
 import PasswordField from './PasswordField';
 import UsernameField from './UsernameField';
 
@@ -35,6 +36,8 @@ interface Props {
   errors: FieldErrors<LoginFormValues>;
   isValid: boolean;
   isSubmitting?: boolean;
+  /** Post-SSO continuation: the CLI session path on the security page. */
+  next?: string;
 }
 
 const LoginForm: FC<Props> = ({
@@ -44,6 +47,7 @@ const LoginForm: FC<Props> = ({
   errors,
   isValid,
   isSubmitting = false,
+  next,
 }) => {
   const { t } = useTranslation();
   const configuration = getConfiguration();
@@ -70,6 +74,7 @@ const LoginForm: FC<Props> = ({
       >
         {t('button.login')}
       </StyledButton>
+      <OidcLoginButton next={next} />
       {changePasswordEnabled && (
         <Typography align="center" sx={{ mt: 2, fontSize: 12 }} variant="body2">
           <Link component={RouterLink} sx={{ ml: 1 }} to={Route.CHANGE_PASSWORD}>
