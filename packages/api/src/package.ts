@@ -77,8 +77,7 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
 
         // count a download only once the source stream ended — failed
         // upstream fetches, aborted clients and HEAD probes must not inflate
-        // the statistics. Stream 'end' precedes res.end(), so the count is
-        // recorded before the client can observe the completed response
+        // the statistics
         const isHead = req.method === 'HEAD';
         let counted = false;
         const count = (): void => {
