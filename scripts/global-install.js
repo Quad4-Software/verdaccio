@@ -62,11 +62,51 @@ function discoverWorkspacePackages() {
 
 const OVERLAY_PACKAGES = discoverWorkspacePackages();
 
+// Unpublished workspace deps (verdaccio-oidc) are not on the registry, so
+// their tarballs must be passed to npm install -g alongside the main one.
+const verdaccioManifest = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'packages/verdaccio/package.json'), 'utf-8')
+);
+const directWorkspaceDeps = new Set(
+  Object.entries(verdaccioManifest.dependencies || {})
+    .filter(([, spec]) => typeof spec === 'string' && spec.startsWith('workspace:'))
+    .map(([name]) => name)
+);
+
 // 1. Pack verdaccio itself
 console.log('\nPacking verdaccio...');
 run(`pnpm pack --pack-destination "${tmpDir}"`, { cwd: path.join(ROOT, 'packages/verdaccio') });
 
-// 2. Install globally from tarball
+// 2. Pack all workspace packages once. The tarballs satisfy the global
+// install for unpublished workspace deps and feed the overlay pass below.
+const packedWorkspace = new Map();
+for (const pkg of OVERLAY_PACKAGES) {
+  const pkgDir = path.join(ROOT, pkg.dir);
+  if (!fs.existsSync(pkgDir)) {
+    console.warn(`Skipping ${pkg.scope}: directory not found`);
+    continue;
+  }
+
+  // Isolated subdirectory avoids tarball name collisions; fixture dirs that
+  // cannot pack are skipped rather than aborting the install.
+  const packDir = path.join(tmpDir, pkg.dir.replace(/\//g, '-'));
+  fs.mkdirSync(packDir, { recursive: true });
+  try {
+    run(`pnpm pack --pack-destination "${packDir}"`, { cwd: pkgDir });
+  } catch {
+    console.warn(`Skipping ${pkg.scope}: pnpm pack failed`);
+    continue;
+  }
+
+  const pkgTarball = fs.readdirSync(packDir).find((f) => f.endsWith('.tgz'));
+  if (!pkgTarball) {
+    console.warn(`No tarball found for ${pkg.scope}`);
+    continue;
+  }
+  packedWorkspace.set(pkg.scope, path.join(packDir, pkgTarball));
+}
+
+// 3. Install globally from tarball
 const tarballs = fs
   .readdirSync(tmpDir)
   .filter((f) => f.startsWith('verdaccio-') && f.endsWith('.tgz'));
@@ -75,18 +115,22 @@ if (tarballs.length === 0) {
   process.exit(1);
 }
 const mainTarball = path.join(tmpDir, tarballs[0]);
+const localDepTarballs = [...directWorkspaceDeps]
+  .map((name) => packedWorkspace.get(name))
+  .filter(Boolean)
+  .map((t) => `"${t}"`)
+  .join(' ');
 console.log(`\nInstalling globally: ${mainTarball}`);
-run(`npm install -g "${mainTarball}"`);
+run(`npm install -g "${mainTarball}" ${localDepTarballs}`);
 
-// 3. Find the global install location
+// 4. Find the global install location
 const globalRoot = runCapture('npm root -g');
 const globalVerdaccio = path.join(globalRoot, 'verdaccio', 'node_modules');
 
-// 4. Pack and overlay workspace dependencies
+// 5. Overlay workspace dependencies
 for (const pkg of OVERLAY_PACKAGES) {
-  const pkgDir = path.join(ROOT, pkg.dir);
-  if (!fs.existsSync(pkgDir)) {
-    console.warn(`Skipping ${pkg.scope}: directory not found`);
+  const tarball = packedWorkspace.get(pkg.scope);
+  if (!tarball) {
     continue;
   }
 
@@ -97,21 +141,10 @@ for (const pkg of OVERLAY_PACKAGES) {
   }
 
   console.log(`\nOverlaying ${pkg.scope}...`);
-  // Pack into an isolated subdirectory to avoid tarball name collisions
-  const packDir = path.join(tmpDir, pkg.dir.replace(/\//g, '-'));
-  fs.mkdirSync(packDir, { recursive: true });
-  run(`pnpm pack --pack-destination "${packDir}"`, { cwd: pkgDir });
-
-  const pkgTarball = fs.readdirSync(packDir).find((f) => f.endsWith('.tgz'));
-  if (!pkgTarball) {
-    console.warn(`No tarball found for ${pkg.scope}`);
-    continue;
-  }
-
-  run(`tar xzf "${path.join(packDir, pkgTarball)}" --strip-components=1 -C "${targetDir}"`);
+  run(`tar xzf "${tarball}" --strip-components=1 -C "${targetDir}"`);
 }
 
-// 5. Verify
+// 6. Verify
 const version = runCapture('verdaccio --version');
 console.log(`\nInstalled verdaccio ${version}`);
 console.log('Run: verdaccio');
