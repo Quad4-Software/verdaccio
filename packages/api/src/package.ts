@@ -80,6 +80,8 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
         // the statistics
         const isHead = req.method === 'HEAD';
         let counted = false;
+        let expected = -1;
+        let sent = 0;
         const count = (): void => {
           if (counted || isHead) {
             return;
@@ -92,12 +94,16 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
         res.once('finish', count);
 
         stream.on('content-length', (size) => {
+          expected = size;
           debug('tarball size %o', size);
           // the size event races against the first data chunk; setting a
           // header after they are flushed would throw and kill the process
           if (!res.headersSent) {
             res.header(HEADER_TYPE.CONTENT_LENGTH, size);
           }
+        });
+        stream.on('data', (chunk) => {
+          sent += chunk.length;
         });
 
         stream.once('error', (err) => {
@@ -120,13 +126,19 @@ export default function (route: Router, auth: Auth, storage: Storage, logger: Lo
         });
 
         // 'abort' on the request never fires on modern Node; the response
-        // close event covers client disconnects — skip it when the response
-        // already ended normally
+        // close event covers client disconnects. A client may close right
+        // after the last byte while the source 'end' event is still queued,
+        // so a fully delivered body counts even if 'end' never fires.
         res.on('close', () => {
-          if (!res.writableEnded) {
-            debug('client disconnected during download for %o', req.url);
-            abort.abort();
+          if (res.writableEnded) {
+            return;
           }
+          if (expected >= 0 && sent >= expected) {
+            count();
+          } else {
+            debug('client disconnected during download for %o', req.url);
+          }
+          abort.abort();
         });
 
         res.header(HEADERS.CONTENT_TYPE, HEADERS.OCTET_STREAM);
