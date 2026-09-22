@@ -75,3 +75,4 @@ packages/ui-components/storybook-static
 
 # local preview
 .preview/
+.nullray/
