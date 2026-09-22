@@ -4,9 +4,9 @@ import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 import type { Theme } from '../../';
-import { useConfig } from '../../';
+import { Logo, useConfig } from '../../';
 import { Earth } from '../../components/Icons';
-import { Inner, Left, Love, Wrapper } from './styles';
+import { Inner, Left, Love, Right, Wrapper } from './styles';
 
 const Footer = () => {
   const { t } = useTranslation();
@@ -52,9 +52,14 @@ const Footer = () => {
             </Flags>
           </ToolTip>
         </Left>
-        {configOptions?.version ? (
-          <Version data-testid="version-footer">{configOptions.version}</Version>
-        ) : null}
+        <Right>
+          {configOptions?.version ? (
+            <>
+              <Logo size="x-small" title={configOptions.version} />
+              <Version data-testid="version-footer">{configOptions.version}</Version>
+            </>
+          ) : null}
+        </Right>
       </Inner>
     </Wrapper>
   );

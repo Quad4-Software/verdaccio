@@ -309,9 +309,19 @@ describe('registry parity endpoints', () => {
     await getTarball(app, 'dl-pkg', 'dl-pkg-1.0.0.tgz', token).expect(HTTP_STATUS.OK);
     await getTarball(app, 'dl-pkg', 'dl-pkg-1.0.0.tgz', token).expect(HTTP_STATUS.OK);
 
-    const point = await supertest(app)
-      .get('/-/npm/v1/downloads/point/last-week/dl-pkg')
-      .expect(HTTP_STATUS.OK);
+    // the counter is recorded on stream 'end', which the client can observe
+    // before the server-side listener runs; poll until it lands (or time out)
+    let point: any;
+    const deadline = Date.now() + 3000;
+    do {
+      point = await supertest(app)
+        .get('/-/npm/v1/downloads/point/last-week/dl-pkg')
+        .expect(HTTP_STATUS.OK);
+      if (point.body.downloads >= 2) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    } while (Date.now() < deadline);
     expect(point.body.package).toBe('dl-pkg');
     expect(point.body.downloads).toBeGreaterThanOrEqual(2);
 
