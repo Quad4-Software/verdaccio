@@ -62,16 +62,37 @@ function discoverWorkspacePackages() {
 
 const OVERLAY_PACKAGES = discoverWorkspacePackages();
 
-// Unpublished workspace deps (verdaccio-oidc) are not on the registry, so
-// their tarballs must be passed to npm install -g alongside the main one.
-const verdaccioManifest = JSON.parse(
-  fs.readFileSync(path.join(ROOT, 'packages/verdaccio/package.json'), 'utf-8')
-);
-const directWorkspaceDeps = new Set(
-  Object.entries(verdaccioManifest.dependencies || {})
-    .filter(([, spec]) => typeof spec === 'string' && spec.startsWith('workspace:'))
-    .map(([name]) => name)
-);
+// Workspace deps resolve from local tarballs: unpublished packages are missing
+// on the registry and published builds can skew against local code.
+const manifests = new Map([
+  [
+    'verdaccio',
+    JSON.parse(fs.readFileSync(path.join(ROOT, 'packages/verdaccio/package.json'), 'utf-8')),
+  ],
+]);
+for (const pkg of OVERLAY_PACKAGES) {
+  const manifestPath = path.join(ROOT, pkg.dir, 'package.json');
+  if (fs.existsSync(manifestPath)) {
+    manifests.set(pkg.scope, JSON.parse(fs.readFileSync(manifestPath, 'utf-8')));
+  }
+}
+const workspaceDepsOf = (name) => {
+  const manifest = manifests.get(name) || {};
+  return ['dependencies', 'peerDependencies', 'optionalDependencies'].flatMap((field) =>
+    Object.entries(manifest[field] || {})
+      .filter(([, spec]) => typeof spec === 'string' && spec.startsWith('workspace:'))
+      .map(([dep]) => dep)
+  );
+};
+const depClosure = new Set();
+const queue = workspaceDepsOf('verdaccio');
+while (queue.length) {
+  const name = queue.pop();
+  if (!depClosure.has(name)) {
+    depClosure.add(name);
+    queue.push(...workspaceDepsOf(name));
+  }
+}
 
 // 1. Pack verdaccio itself
 console.log('\nPacking verdaccio...');
@@ -115,7 +136,7 @@ if (tarballs.length === 0) {
   process.exit(1);
 }
 const mainTarball = path.join(tmpDir, tarballs[0]);
-const localDepTarballs = [...directWorkspaceDeps]
+const localDepTarballs = [...depClosure]
   .map((name) => packedWorkspace.get(name))
   .filter(Boolean)
   .map((t) => `"${t}"`)

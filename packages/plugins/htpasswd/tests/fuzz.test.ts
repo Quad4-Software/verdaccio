@@ -37,12 +37,15 @@ describe('fuzz: htpasswd parsing', () => {
 
   test('a __proto__ line cannot pollute the result prototype', () => {
     fc.assert(
-      fc.property(fc.string(), (hash) => {
-        const parsed = parseHTPasswd(`__proto__:${hash}\nuser:abc`);
-        expect(Object.getPrototypeOf(parsed)).toBe(Object.prototype);
-        // the setter ignores non-object values, so no own property is created
-        expect(Object.prototype.hasOwnProperty.call(parsed, '__proto__')).toBe(false);
-      })
+      fc.property(
+        fc.string().filter((s) => !s.includes(':') && !s.includes('\n') && !s.includes('\r')),
+        (hash) => {
+          const parsed = parseHTPasswd(`__proto__:${hash}\nuser:abc`);
+          expect(Object.getPrototypeOf(parsed)).toBe(Object.prototype);
+          // the line is preserved as an own property without invoking the setter
+          expect(parsed['__proto__']).toBe(hash.trim());
+        }
+      )
     );
   });
 

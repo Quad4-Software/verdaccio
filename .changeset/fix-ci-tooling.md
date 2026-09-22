@@ -1,4 +1,5 @@
 ---
+'verdaccio-htpasswd': patch
 ---
 
-CI tooling fixes for the fork: format fix in SECURITY.md, workspace tarball resolution in scripts/global-install.js, and pnpm_config_registry for local:publish. No published package changed.
+Fix a `__proto__` username becoming unreadable after being written to the htpasswd file. `addUserToHTPasswd` accepts `__proto__` because it is URI-safe, but `parseHTPasswd` assigned keys through the prototype setter, so the line was silently dropped and `users['__proto__']` returned `Object.prototype` instead of the stored hash. Entries are now defined as own properties, so the prototype is not modified and every parsed line round-trips.

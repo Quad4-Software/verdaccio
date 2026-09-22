@@ -51,7 +51,14 @@ export function parseHTPasswd(input: string): Record<string, any> {
   return input.split(/[\r]?[\n]/).reduce((result, line) => {
     const args = line.split(':', 3).map((str) => str.trim());
     if (args.length > 1) {
-      result[args[0]] = args[1];
+      // defineProperty creates an own property so a __proto__ username is data,
+      // not a prototype setter call
+      Object.defineProperty(result, args[0], {
+        value: args[1],
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
     }
     return result;
   }, {});
