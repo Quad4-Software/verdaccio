@@ -9,7 +9,7 @@ latest commit on `master` and the latest tagged release are supported.
 
 ## Reporting a security issue
 
-Please *DO NOT* file a public issue. Instead, file a
+Please _DO NOT_ file a public issue. Instead, file a
 [private security advisory](https://github.com/Quad4-Software/verdaccio/security/advisories)
 against this repository.
 
